@@ -213,13 +213,14 @@ const SuperAdminRestaurants = () => {
               <Label>ফোন</Label>
               <Input value={formPhone} onChange={e => setFormPhone(e.target.value)} placeholder="+880..." />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>স্ট্যাটাস</Label>
                 <Select value={formStatus} onValueChange={setFormStatus}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="active">সক্রিয়</SelectItem>
+                    <SelectItem value="active">সক্রিয় (ট্রায়াল)</SelectItem>
+                    <SelectItem value="active_paid">সক্রিয় (পেইড)</SelectItem>
                     <SelectItem value="pending">পেন্ডিং</SelectItem>
                     <SelectItem value="inactive">নিষ্ক্রিয়</SelectItem>
                   </SelectContent>
@@ -230,9 +231,9 @@ const SuperAdminRestaurants = () => {
                 <Select value={formPlan} onValueChange={setFormPlan}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="basic">Basic</SelectItem>
-                    <SelectItem value="premium">Premium</SelectItem>
-                    <SelectItem value="enterprise">Enterprise</SelectItem>
+                    <SelectItem value="basic">Basic — ৫০০ টাকা/মাস</SelectItem>
+                    <SelectItem value="premium">Premium — ১,০০০ টাকা/মাস</SelectItem>
+                    <SelectItem value="enterprise">Enterprise — ২,৫০০ টাকা/মাস</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
