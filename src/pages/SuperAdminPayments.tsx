@@ -253,7 +253,7 @@ const SuperAdminPayments = () => {
                   </Button>
                   <Button
                     variant="destructive"
-                    onClick={() => rejectMutation.mutate(selectedPayment.id)}
+                    onClick={() => rejectMutation.mutate({ paymentId: selectedPayment.id, userId: selectedPayment.user_id })}
                     disabled={rejectMutation.isPending}
                   >
                     {rejectMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <XCircle className="w-4 h-4 mr-1" />}
