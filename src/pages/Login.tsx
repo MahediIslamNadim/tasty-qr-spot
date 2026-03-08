@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -14,11 +15,14 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [restaurantName, setRestaurantName] = useState("");
+  const [restaurantAddress, setRestaurantAddress] = useState("");
+  const [restaurantPhone, setRestaurantPhone] = useState("");
+  const [selectedPlan, setSelectedPlan] = useState("basic");
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
 
-  // Redirect if already logged in
   useEffect(() => {
     if (!loading && user && role) {
       if (role === "super_admin") navigate("/super-admin", { replace: true });
@@ -33,6 +37,10 @@ const Login = () => {
       toast.error("সব ফিল্ড পূরণ করুন");
       return;
     }
+    if (isSignUp && !restaurantName.trim()) {
+      toast.error("রেস্টুরেন্টের নাম দিন");
+      return;
+    }
     setSubmitting(true);
     try {
       if (isSignUp) {
@@ -45,15 +53,27 @@ const Login = () => {
           },
         });
         if (error) throw error;
-        
+
         if (data.user) {
-          // Create a default restaurant for new admin users
+          // Calculate 14-day trial end date
+          const trialEndsAt = new Date();
+          trialEndsAt.setDate(trialEndsAt.getDate() + 14);
+
+          // Create restaurant with trial period
           const { data: restaurant, error: restError } = await supabase
             .from("restaurants")
-            .insert({ name: fullName.trim() + " এর রেস্টুরেন্ট", owner_id: data.user.id })
+            .insert({
+              name: restaurantName.trim(),
+              address: restaurantAddress.trim() || null,
+              phone: restaurantPhone.trim() || null,
+              plan: selectedPlan,
+              owner_id: data.user.id,
+              status: "active",
+              trial_ends_at: trialEndsAt.toISOString(),
+            })
             .select()
             .single();
-          
+
           if (restError) console.error("Restaurant creation error:", restError);
 
           // Assign admin role
@@ -72,7 +92,6 @@ const Login = () => {
               { restaurant_id: restaurant.id, name: "বোরহানি", price: 80, category: "পানীয়", description: "ঐতিহ্যবাহী মশলা পানীয়" },
             ]);
 
-            // Create demo tables
             await supabase.from("restaurant_tables").insert([
               { restaurant_id: restaurant.id, name: "T-1", seats: 4 },
               { restaurant_id: restaurant.id, name: "T-2", seats: 6 },
@@ -83,8 +102,7 @@ const Login = () => {
             ]);
           }
 
-          toast.success("অ্যাকাউন্ট তৈরি হয়েছে! আপনাকে রিডাইরেক্ট করা হচ্ছে...");
-          // Auth state change will handle redirect
+          toast.success("অ্যাকাউন্ট তৈরি হয়েছে! ১৪ দিনের ফ্রি ট্রায়াল শুরু হয়েছে।");
         }
       } else {
         const { error } = await supabase.auth.signInWithPassword({
@@ -93,7 +111,6 @@ const Login = () => {
         });
         if (error) throw error;
         toast.success("স্বাগতম!");
-        // Auth state change will handle redirect
       }
     } catch (err: any) {
       toast.error(err.message || "প্রমাণীকরণ ব্যর্থ");
@@ -122,7 +139,7 @@ const Login = () => {
       </div>
 
       {/* Right Panel */}
-      <div className="flex-1 flex items-center justify-center p-8 bg-background">
+      <div className="flex-1 flex items-center justify-center p-8 bg-background overflow-y-auto">
         <div className="w-full max-w-md animate-fade-up">
           <div className="lg:hidden flex items-center gap-3 mb-8 justify-center">
             <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl gradient-primary">
@@ -131,28 +148,95 @@ const Login = () => {
             <h1 className="text-2xl font-display font-bold text-foreground">Restaurant QR</h1>
           </div>
 
-          <div className="mb-8">
+          <div className="mb-6">
             <h2 className="text-3xl font-display font-bold text-foreground mb-2">
               {isSignUp ? "অ্যাকাউন্ট তৈরি করুন" : "স্বাগতম"}
             </h2>
             <p className="text-muted-foreground">
-              {isSignUp ? "নতুন অ্যাকাউন্ট তৈরি করতে তথ্য দিন" : "আপনার ড্যাশবোর্ডে লগইন করুন"}
+              {isSignUp ? "নতুন অ্যাকাউন্ট তৈরি করতে তথ্য দিন • ১৪ দিন ফ্রি ট্রায়াল" : "আপনার ড্যাশবোর্ডে লগইন করুন"}
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-4">
             {isSignUp && (
-              <div className="space-y-2">
-                <Label htmlFor="fullName" className="text-foreground font-medium">নাম</Label>
-                <Input
-                  id="fullName"
-                  type="text"
-                  placeholder="আপনার নাম"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  className="h-12 bg-secondary/50 border-border focus:border-primary"
-                />
-              </div>
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="fullName" className="text-foreground font-medium">আপনার নাম</Label>
+                  <Input
+                    id="fullName"
+                    type="text"
+                    placeholder="আপনার নাম"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    className="h-11 bg-secondary/50 border-border focus:border-primary"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="restaurantName" className="text-foreground font-medium">রেস্টুরেন্টের নাম <span className="text-destructive">*</span></Label>
+                  <Input
+                    id="restaurantName"
+                    type="text"
+                    placeholder="আপনার রেস্টুরেন্টের নাম"
+                    value={restaurantName}
+                    onChange={(e) => setRestaurantName(e.target.value)}
+                    className="h-11 bg-secondary/50 border-border focus:border-primary"
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="restaurantAddress" className="text-foreground font-medium">ঠিকানা</Label>
+                    <Input
+                      id="restaurantAddress"
+                      type="text"
+                      placeholder="ঠিকানা"
+                      value={restaurantAddress}
+                      onChange={(e) => setRestaurantAddress(e.target.value)}
+                      className="h-11 bg-secondary/50 border-border focus:border-primary"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="restaurantPhone" className="text-foreground font-medium">ফোন</Label>
+                    <Input
+                      id="restaurantPhone"
+                      type="text"
+                      placeholder="+880..."
+                      value={restaurantPhone}
+                      onChange={(e) => setRestaurantPhone(e.target.value)}
+                      className="h-11 bg-secondary/50 border-border focus:border-primary"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-foreground font-medium">প্যাকেজ নির্বাচন</Label>
+                  <Select value={selectedPlan} onValueChange={setSelectedPlan}>
+                    <SelectTrigger className="h-11 bg-secondary/50 border-border">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="basic">
+                        <div className="flex flex-col items-start">
+                          <span className="font-medium">Basic — ফ্রি (১৪ দিন)</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="premium">
+                        <div className="flex flex-col items-start">
+                          <span className="font-medium">Premium — ফ্রি (১৪ দিন)</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="enterprise">
+                        <div className="flex flex-col items-start">
+                          <span className="font-medium">Enterprise — ফ্রি (১৪ দিন)</span>
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">সব প্যাকেজে ১৪ দিনের ফ্রি ট্রায়াল। ট্রায়াল শেষে পেমেন্ট করে প্যাকেজ চালু রাখুন।</p>
+                </div>
+              </>
             )}
 
             <div className="space-y-2">
@@ -163,7 +247,7 @@ const Login = () => {
                 placeholder="your@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="h-12 bg-secondary/50 border-border focus:border-primary"
+                className="h-11 bg-secondary/50 border-border focus:border-primary"
               />
             </div>
 
@@ -176,7 +260,7 @@ const Login = () => {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="h-12 bg-secondary/50 border-border focus:border-primary pr-12"
+                  className="h-11 bg-secondary/50 border-border focus:border-primary pr-12"
                 />
                 <button
                   type="button"
