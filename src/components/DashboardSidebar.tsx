@@ -5,6 +5,7 @@ import {
   Store,
   Users,
   BarChart3,
+  CreditCard,
   Menu,
   QrCode,
   ShoppingCart,
