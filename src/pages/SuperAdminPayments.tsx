@@ -64,7 +64,7 @@ const SuperAdminPayments = () => {
   );
 
   const approveMutation = useMutation({
-    mutationFn: async ({ paymentId, restaurantId, plan }: { paymentId: string; restaurantId: string; plan: string }) => {
+    mutationFn: async ({ paymentId, restaurantId, plan, userId }: { paymentId: string; restaurantId: string; plan: string; userId: string }) => {
       // Update payment status
       const { error: payError } = await supabase
         .from("payment_requests" as any)
@@ -78,6 +78,14 @@ const SuperAdminPayments = () => {
         .update({ status: "active_paid", plan, updated_at: new Date().toISOString() })
         .eq("id", restaurantId);
       if (restError) throw restError;
+
+      // Send notification to user
+      await supabase.from("notifications" as any).insert({
+        user_id: userId,
+        title: "পেমেন্ট অনুমোদিত ✅",
+        message: `আপনার ${plan} প্ল্যানের পেমেন্ট অনুমোদিত হয়েছে। আপনার রেস্টুরেন্ট এখন সক্রিয়!`,
+        type: "success",
+      } as any);
     },
     onSuccess: () => {
       toast.success("পেমেন্ট অনুমোদিত এবং রেস্টুরেন্ট সক্রিয় করা হয়েছে!");
