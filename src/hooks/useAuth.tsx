@@ -16,6 +16,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   role: null,
   restaurantId: null,
+  restaurantPlan: "basic",
   loading: true,
   trialExpired: false,
   signOut: async () => {},
