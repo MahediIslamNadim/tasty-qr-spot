@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, Plus, Minus, UtensilsCrossed, X, Send, Image as ImageIcon, Flame, Star } from "lucide-react";
+import { ShoppingCart, Plus, Minus, UtensilsCrossed, X, Send, Image as ImageIcon, Flame, CheckCircle, XCircle, Package, Search } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -26,6 +26,25 @@ interface CartItem extends MenuItem {
   quantity: number;
 }
 
+// Assign each category a unique color
+const categoryColors: Record<string, { bg: string; text: string; border: string; dot: string }> = {};
+const colorPalette = [
+  { bg: "bg-primary/10", text: "text-primary", border: "border-primary/30", dot: "bg-primary" },
+  { bg: "bg-info/10", text: "text-info", border: "border-info/30", dot: "bg-info" },
+  { bg: "bg-success/10", text: "text-success", border: "border-success/30", dot: "bg-success" },
+  { bg: "bg-rose/10", text: "text-rose", border: "border-rose/30", dot: "bg-rose" },
+  { bg: "bg-amber/10", text: "text-amber", border: "border-amber/30", dot: "bg-amber" },
+  { bg: "bg-accent", text: "text-accent-foreground", border: "border-accent-foreground/20", dot: "bg-accent-foreground" },
+];
+
+const getCategoryColor = (category: string) => {
+  if (!categoryColors[category]) {
+    const idx = Object.keys(categoryColors).length % colorPalette.length;
+    categoryColors[category] = colorPalette[idx];
+  }
+  return categoryColors[category];
+};
+
 const CustomerMenu = () => {
   const { restaurantId } = useParams();
   const [searchParams] = useSearchParams();
@@ -43,6 +62,8 @@ const CustomerMenu = () => {
   const [showCart, setShowCart] = useState(false);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showSearch, setShowSearch] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -52,10 +73,12 @@ const CustomerMenu = () => {
         const demoItems: MenuItem[] = [
           { id: "1", name: "চিকেন বিরিয়ানি", price: 350, category: "বিরিয়ানি", description: "সুগন্ধি বাসমতি চালে রান্না করা মুরগির বিরিয়ানি", available: true },
           { id: "2", name: "বটি কাবাব", price: 180, category: "কাবাব", description: "মশলাযুক্ত গরুর মাংসের কাবাব", available: true },
-          { id: "3", name: "মটন বিরিয়ানি", price: 450, category: "বিরিয়ানি", description: "খাসির মাংস দিয়ে তৈরি বিরিয়ানি", available: true },
+          { id: "3", name: "মটন বিরিয়ানি", price: 450, category: "বিরিয়ানি", description: "খাসির মাংস দিয়ে তৈরি বিরিয়ানি", available: false },
           { id: "4", name: "প্লেইন ভাত", price: 60, category: "ভাত", description: "সাদা ভাত", available: true },
           { id: "5", name: "মাংগো লাচ্ছি", price: 120, category: "পানীয়", description: "তাজা আমের লাচ্ছি", available: true },
           { id: "6", name: "ফিরনি", price: 100, category: "ডেজার্ট", description: "ঐতিহ্যবাহী দুধের ফিরনি", available: true },
+          { id: "7", name: "শিক কাবাব", price: 220, category: "কাবাব", description: "কাঠকয়লায় ভাজা শিক কাবাব", available: true },
+          { id: "8", name: "বোরহানি", price: 80, category: "পানীয়", description: "ঐতিহ্যবাহী মশলা পানীয়", available: false },
         ];
         setMenuItems(demoItems);
         const cats = ["সব", ...new Set(demoItems.map(i => i.category))];
@@ -64,9 +87,10 @@ const CustomerMenu = () => {
         return;
       }
 
+      // Fetch all items (including unavailable) to show stock status
       const [restRes, menuRes] = await Promise.all([
         supabase.from("restaurants").select("*").eq("id", restaurantId).single(),
-        supabase.from("menu_items").select("*").eq("restaurant_id", restaurantId).eq("available", true).order("sort_order"),
+        supabase.from("menu_items").select("*").eq("restaurant_id", restaurantId).order("sort_order"),
       ]);
 
       if (restRes.data) setRestaurant(restRes.data);
@@ -81,12 +105,10 @@ const CustomerMenu = () => {
         if (tableData) setTableName(tableData.name);
       }
 
-      // If seat QR, fetch seat info and mark occupied
       if (seatId) {
         const { data: seatData } = await supabase.from("table_seats").select("seat_number").eq("id", seatId).single();
         if (seatData) {
           setSeatNumber(seatData.seat_number);
-          // Mark seat as occupied
           await supabase.from("table_seats").update({ status: "occupied" }).eq("id", seatId);
         }
       }
@@ -96,9 +118,28 @@ const CustomerMenu = () => {
     fetchData();
   }, [restaurantId, tableId, isDemo]);
 
-  const filtered = activeCategory === "সব" ? menuItems : menuItems.filter(i => i.category === activeCategory);
+  const filtered = menuItems
+    .filter(i => activeCategory === "সব" || i.category === activeCategory)
+    .filter(i => !searchQuery || i.name.toLowerCase().includes(searchQuery.toLowerCase()) || i.description?.toLowerCase().includes(searchQuery.toLowerCase()));
+
+  // Stats
+  const totalMenuItems = menuItems.length;
+  const inStockCount = menuItems.filter(i => i.available).length;
+  const outOfStockCount = menuItems.filter(i => !i.available).length;
+  const categoryItemCounts = categories.reduce<Record<string, number>>((acc, cat) => {
+    if (cat === "সব") {
+      acc[cat] = menuItems.length;
+    } else {
+      acc[cat] = menuItems.filter(i => i.category === cat).length;
+    }
+    return acc;
+  }, {});
 
   const addToCart = (item: MenuItem) => {
+    if (!item.available) {
+      toast.error("এই আইটেমটি এখন পাওয়া যাচ্ছে না");
+      return;
+    }
     setCart(prev => {
       const existing = prev.find(c => c.id === item.id);
       if (existing) return prev.map(c => c.id === item.id ? { ...c, quantity: c.quantity + 1 } : c);
@@ -192,36 +233,95 @@ const CustomerMenu = () => {
               </p>
             </div>
           </div>
-          <button
-            onClick={() => setShowCart(true)}
-            className="relative w-11 h-11 rounded-2xl bg-primary/10 hover:bg-primary/20 flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95"
-          >
-            <ShoppingCart className="w-5 h-5 text-primary" />
-            {totalItems > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 w-5.5 h-5.5 min-w-[22px] min-h-[22px] rounded-full gradient-primary text-primary-foreground text-[11px] flex items-center justify-center font-bold shadow-lg shadow-primary/30 animate-bounce">
-                {totalItems}
-              </span>
-            )}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowSearch(!showSearch)}
+              className="w-11 h-11 rounded-2xl bg-secondary hover:bg-accent flex items-center justify-center transition-all"
+            >
+              <Search className="w-5 h-5 text-muted-foreground" />
+            </button>
+            <button
+              onClick={() => setShowCart(true)}
+              className="relative w-11 h-11 rounded-2xl bg-primary/10 hover:bg-primary/20 flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95"
+            >
+              <ShoppingCart className="w-5 h-5 text-primary" />
+              {totalItems > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 min-w-[22px] min-h-[22px] rounded-full gradient-primary text-primary-foreground text-[11px] flex items-center justify-center font-bold shadow-lg shadow-primary/30 animate-bounce">
+                  {totalItems}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
+
+        {/* Search bar */}
+        {showSearch && (
+          <div className="max-w-2xl mx-auto px-4 pb-3 animate-fade-in">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="খাবার খুঁজুন..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-secondary/50 border border-border/50 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                autoFocus
+              />
+            </div>
+          </div>
+        )}
       </header>
+
+      {/* Stats bar */}
+      <div className="max-w-2xl mx-auto px-4 pt-4">
+        <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs font-semibold text-primary whitespace-nowrap">
+            <Package className="w-3.5 h-3.5" />
+            মোট {totalMenuItems}টি
+          </div>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-success/10 border border-success/20 text-xs font-semibold text-success whitespace-nowrap">
+            <CheckCircle className="w-3.5 h-3.5" />
+            স্টকে {inStockCount}টি
+          </div>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-destructive/10 border border-destructive/20 text-xs font-semibold text-destructive whitespace-nowrap">
+            <XCircle className="w-3.5 h-3.5" />
+            স্টক আউট {outOfStockCount}টি
+          </div>
+        </div>
+      </div>
 
       {/* Categories */}
       <div className="sticky top-[73px] z-10 bg-background/80 backdrop-blur-xl border-b border-border/30">
         <div className="max-w-2xl mx-auto px-4 py-3 flex gap-2 overflow-x-auto scrollbar-hide">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
-              className={`px-5 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition-all duration-300 ${
-                activeCategory === cat
-                  ? "gradient-primary text-primary-foreground shadow-md shadow-primary/25 scale-105"
-                  : "bg-card text-muted-foreground hover:text-foreground hover:bg-accent border border-border/50"
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+          {categories.map((cat) => {
+            const isAll = cat === "সব";
+            const color = isAll ? null : getCategoryColor(cat);
+            const isActive = activeCategory === cat;
+            const count = categoryItemCounts[cat] || 0;
+
+            return (
+              <button
+                key={cat}
+                onClick={() => setActiveCategory(cat)}
+                className={`px-4 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition-all duration-300 flex items-center gap-2 ${
+                  isActive
+                    ? "gradient-primary text-primary-foreground shadow-md shadow-primary/25 scale-105"
+                    : isAll
+                      ? "bg-card text-muted-foreground hover:text-foreground hover:bg-accent border border-border/50"
+                      : `${color!.bg} ${color!.text} border ${color!.border} hover:scale-105`
+                }`}
+              >
+                {cat}
+                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
+                  isActive
+                    ? "bg-primary-foreground/20 text-primary-foreground"
+                    : "bg-foreground/5 text-muted-foreground"
+                }`}>
+                  {count}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -236,10 +336,17 @@ const CustomerMenu = () => {
         {filtered.map((item, index) => {
           const cartItem = cart.find(c => c.id === item.id);
           const imgUrl = getImageUrl(item.image_url || null);
+          const catColor = getCategoryColor(item.category);
+          const isOutOfStock = !item.available;
+
           return (
             <div
               key={item.id}
-              className="group bg-card rounded-2xl border border-border/60 overflow-hidden transition-all duration-500 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1 animate-fade-up"
+              className={`group bg-card rounded-2xl border overflow-hidden transition-all duration-500 animate-fade-up ${
+                isOutOfStock
+                  ? "border-destructive/20 opacity-75"
+                  : "border-border/60 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1"
+              }`}
               style={{ animationDelay: `${index * 80}ms` }}
             >
               {/* Image Section */}
@@ -248,7 +355,9 @@ const CustomerMenu = () => {
                   <img
                     src={imgUrl}
                     alt={item.name}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+                    className={`w-full h-full object-cover transition-transform duration-700 ease-out ${
+                      isOutOfStock ? "grayscale" : "group-hover:scale-110"
+                    }`}
                   />
                 ) : (
                   <div className="w-full h-full flex flex-col items-center justify-center gap-2">
@@ -257,14 +366,40 @@ const CustomerMenu = () => {
                     </div>
                   </div>
                 )}
+
                 {/* Price Badge */}
-                <div className="absolute top-3 right-3 gradient-primary text-primary-foreground px-3.5 py-1.5 rounded-xl text-sm font-bold shadow-lg shadow-primary/30 backdrop-blur-sm">
+                <div className={`absolute top-3 right-3 px-3.5 py-1.5 rounded-xl text-sm font-bold shadow-lg backdrop-blur-sm ${
+                  isOutOfStock
+                    ? "bg-muted text-muted-foreground"
+                    : "gradient-primary text-primary-foreground shadow-primary/30"
+                }`}>
                   ৳{item.price}
                 </div>
-                {/* Category Badge */}
-                <div className="absolute top-3 left-3 bg-card/80 backdrop-blur-md text-foreground px-3 py-1 rounded-lg text-xs font-semibold border border-border/30">
+
+                {/* Category Badge - Colorful */}
+                <div className={`absolute top-3 left-3 px-3 py-1 rounded-lg text-xs font-semibold border backdrop-blur-md ${catColor.bg} ${catColor.text} ${catColor.border}`}>
                   {item.category}
                 </div>
+
+                {/* Stock Status Badge */}
+                <div className={`absolute bottom-3 left-3 px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1 backdrop-blur-md ${
+                  isOutOfStock
+                    ? "bg-destructive/90 text-destructive-foreground"
+                    : "bg-success/90 text-success-foreground"
+                }`}>
+                  {isOutOfStock ? <XCircle className="w-3 h-3" /> : <CheckCircle className="w-3 h-3" />}
+                  {isOutOfStock ? "স্টক আউট" : "ইন স্টক"}
+                </div>
+
+                {/* Out of stock overlay */}
+                {isOutOfStock && (
+                  <div className="absolute inset-0 bg-foreground/20 backdrop-blur-[1px] flex items-center justify-center">
+                    <span className="px-4 py-2 rounded-xl bg-destructive text-destructive-foreground font-bold text-sm shadow-lg">
+                      বর্তমানে পাওয়া যাচ্ছে না
+                    </span>
+                  </div>
+                )}
+
                 {/* Gradient overlay at bottom */}
                 <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-card to-transparent" />
               </div>
@@ -280,7 +415,11 @@ const CustomerMenu = () => {
                     <Flame className="w-3.5 h-3.5" />
                     <span className="text-xs font-medium">জনপ্রিয়</span>
                   </div>
-                  {cartItem ? (
+                  {isOutOfStock ? (
+                    <span className="px-4 py-2 rounded-xl bg-muted text-muted-foreground text-sm font-medium cursor-not-allowed">
+                      অপ্রাপ্য
+                    </span>
+                  ) : cartItem ? (
                     <div className="flex items-center gap-1 bg-secondary rounded-xl p-1">
                       <button
                         onClick={() => updateQuantity(item.id, -1)}
@@ -340,7 +479,6 @@ const CustomerMenu = () => {
             onClick={e => e.stopPropagation()}
             style={{ animation: "slideUp 0.35s cubic-bezier(0.32, 0.72, 0, 1)" }}
           >
-            {/* Handle bar */}
             <div className="flex justify-center pt-3 pb-1">
               <div className="w-10 h-1 rounded-full bg-border" />
             </div>
@@ -365,29 +503,35 @@ const CustomerMenu = () => {
               ) : (
                 <>
                   <div className="space-y-3 mb-6">
-                    {cart.map((item) => (
-                      <div key={item.id} className="flex items-center gap-3 p-3 rounded-xl bg-secondary/50 border border-border/30">
-                        <div className="w-14 h-14 rounded-xl bg-accent overflow-hidden flex-shrink-0">
-                          {item.image_url ? (
-                            <img src={getImageUrl(item.image_url)!} alt={item.name} className="w-full h-full object-cover" />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <ImageIcon className="w-5 h-5 text-muted-foreground/30" />
+                    {cart.map((item) => {
+                      const catColor = getCategoryColor(item.category);
+                      return (
+                        <div key={item.id} className={`flex items-center gap-3 p-3 rounded-xl bg-secondary/50 border ${catColor.border}`}>
+                          <div className="w-14 h-14 rounded-xl bg-accent overflow-hidden flex-shrink-0">
+                            {item.image_url ? (
+                              <img src={getImageUrl(item.image_url)!} alt={item.name} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <ImageIcon className="w-5 h-5 text-muted-foreground/30" />
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-foreground truncate">{item.name}</p>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold ${catColor.bg} ${catColor.text}`}>{item.category}</span>
+                              <span className="text-sm text-muted-foreground">৳{item.price} × {item.quantity}</span>
                             </div>
-                          )}
+                          </div>
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <span className="font-bold text-foreground text-sm">৳{item.price * item.quantity}</span>
+                            <button onClick={() => removeFromCart(item.id)} className="w-7 h-7 rounded-lg bg-destructive/10 hover:bg-destructive/20 flex items-center justify-center transition-colors">
+                              <X className="w-3.5 h-3.5 text-destructive" />
+                            </button>
+                          </div>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-foreground truncate">{item.name}</p>
-                          <p className="text-sm text-muted-foreground">৳{item.price} × {item.quantity}</p>
-                        </div>
-                        <div className="flex items-center gap-2 flex-shrink-0">
-                          <span className="font-bold text-foreground text-sm">৳{item.price * item.quantity}</span>
-                          <button onClick={() => removeFromCart(item.id)} className="w-7 h-7 rounded-lg bg-destructive/10 hover:bg-destructive/20 flex items-center justify-center transition-colors">
-                            <X className="w-3.5 h-3.5 text-destructive" />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                   <div className="border-t border-border pt-4 mb-6 space-y-2">
                     <div className="flex justify-between text-sm text-muted-foreground">
@@ -396,7 +540,7 @@ const CustomerMenu = () => {
                     </div>
                     <div className="flex justify-between text-lg font-bold text-foreground">
                       <span>মোট</span>
-                      <span className="text-primary">৳{totalPrice}</span>
+                      <span className="text-gradient">৳{totalPrice}</span>
                     </div>
                   </div>
                   <Button
