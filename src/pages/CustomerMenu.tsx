@@ -204,8 +204,12 @@ const CustomerMenu = () => {
           const cartItem = cart.find(c => c.id === item.id);
           return (
             <div key={item.id} className="menu-item-card flex overflow-hidden">
-              <div className="w-28 sm:w-36 bg-gradient-to-br from-accent to-secondary flex items-center justify-center flex-shrink-0">
-                <ImageIcon className="w-8 h-8 text-muted-foreground/20" />
+              <div className="w-28 sm:w-36 bg-gradient-to-br from-accent to-secondary flex items-center justify-center flex-shrink-0 overflow-hidden">
+                {(item as any).image_url ? (
+                  <img src={getImageUrl((item as any).image_url)!} alt={item.name} className="w-full h-full object-cover" />
+                ) : (
+                  <ImageIcon className="w-8 h-8 text-muted-foreground/20" />
+                )}
               </div>
               <div className="flex-1 p-4 flex flex-col justify-between">
                 <div>
