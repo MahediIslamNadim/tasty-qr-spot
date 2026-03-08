@@ -5,6 +5,13 @@ import { ShoppingCart, Plus, Minus, UtensilsCrossed, X, Send, Image as ImageIcon
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const getImageUrl = (path: string | null) => {
+  if (!path) return null;
+  if (path.startsWith("http")) return path;
+  return `${SUPABASE_URL}/storage/v1/object/public/menu-images/${path}`;
+};
+
 interface MenuItem {
   id: string;
   name: string;
