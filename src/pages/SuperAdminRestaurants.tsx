@@ -20,6 +20,7 @@ interface Restaurant {
   plan: string;
   owner_id: string | null;
   created_at: string;
+  trial_ends_at: string | null;
 }
 
 const SuperAdminRestaurants = () => {
