@@ -95,6 +95,9 @@ const WaiterDashboard = () => {
       .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, () => {
         queryClient.invalidateQueries({ queryKey: ["waiter-orders"] });
       })
+      .on("postgres_changes", { event: "*", schema: "public", table: "restaurant_tables" }, () => {
+        queryClient.invalidateQueries({ queryKey: ["waiter-tables", restaurantId] });
+      })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [restaurantId, queryClient]);
