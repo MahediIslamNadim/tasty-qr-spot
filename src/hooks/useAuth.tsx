@@ -26,22 +26,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchUserData = useCallback(async (userId: string) => {
     try {
-      // Get roles
-      const { data: roles, error: roleError } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", userId);
-      
-      if (roleError) console.error("Role fetch error:", roleError);
-      
-      let bestRole = "admin";
-      if (roles && roles.length > 0) {
-        const priority = ["super_admin", "admin", "waiter"];
-        bestRole = roles
-          .map(r => r.role)
-          .sort((a, b) => priority.indexOf(a) - priority.indexOf(b))[0];
+      // Check roles using RPC (bypasses RLS issues)
+      const [superCheck, adminCheck, waiterCheck] = await Promise.all([
+        supabase.rpc("has_role", { _user_id: userId, _role: "super_admin" }),
+        supabase.rpc("has_role", { _user_id: userId, _role: "admin" }),
+        supabase.rpc("has_role", { _user_id: userId, _role: "waiter" }),
+      ]);
+
+      let bestRole = "admin"; // default
+      if (superCheck.data === true) {
+        bestRole = "super_admin";
+      } else if (adminCheck.data === true) {
+        bestRole = "admin";
+      } else if (waiterCheck.data === true) {
+        bestRole = "waiter";
       }
-      console.log("Roles found:", roles, "Best role:", bestRole);
+      console.log("Role checks - super:", superCheck.data, "admin:", adminCheck.data, "waiter:", waiterCheck.data, "Best:", bestRole);
       setRole(bestRole);
 
       // Get restaurant
