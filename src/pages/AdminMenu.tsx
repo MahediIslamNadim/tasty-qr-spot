@@ -23,7 +23,8 @@ const getImageUrl = (path: string | null) => {
 };
 
 const AdminMenu = () => {
-  const { restaurantId } = useAuth();
+  const { restaurantId, restaurantPlan } = useAuth();
+  const limits = getPlanLimits(restaurantPlan);
   const queryClient = useQueryClient();
   const [activeCategory, setActiveCategory] = useState("সব");
   const [showForm, setShowForm] = useState(false);
