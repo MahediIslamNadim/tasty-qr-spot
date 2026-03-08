@@ -86,6 +86,13 @@ const AdminStaff = () => {
 
   const removeStaffMutation = useMutation({
     mutationFn: async (userId: string) => {
+      // Remove from staff_restaurants first
+      await supabase
+        .from("staff_restaurants")
+        .delete()
+        .eq("user_id", userId)
+        .eq("restaurant_id", restaurantId);
+      // Remove role
       const { error } = await supabase
         .from("user_roles")
         .delete()
