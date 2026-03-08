@@ -145,10 +145,20 @@ const AdminTables = () => {
             <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-warning" /><span className="text-sm text-muted-foreground">প্রস্তুত হচ্ছে</span></div>
             <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-primary" /><span className="text-sm text-muted-foreground">সার্ভ/ব্যস্ত</span></div>
           </div>
-          <Button variant="hero" onClick={() => { setForm({ name: "", seats: "4" }); setEditingTable(null); setShowForm(true); }}>
-            <Plus className="w-4 h-4" /> টেবিল যোগ করুন
-          </Button>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-muted-foreground bg-secondary px-3 py-1.5 rounded-full">
+              {tables.length}/{formatLimit(limits.maxTables)} টেবিল
+            </span>
+            <Button variant="hero" onClick={() => { setForm({ name: "", seats: "4" }); setEditingTable(null); setShowForm(true); }} disabled={isAtTableLimit}>
+              <Plus className="w-4 h-4" /> টেবিল যোগ করুন
+            </Button>
+          </div>
         </div>
+        {isAtTableLimit && (
+          <div className="bg-warning/10 border border-warning/30 rounded-xl p-3 text-sm text-warning flex items-center gap-2">
+            ⚠️ আপনার {limits.label} প্ল্যানের টেবিল লিমিট ({formatLimit(limits.maxTables)}) পূর্ণ হয়েছে। আরো যোগ করতে প্ল্যান আপগ্রেড করুন।
+          </div>
+        )
 
         <Dialog open={showForm} onOpenChange={setShowForm}>
           <DialogContent>

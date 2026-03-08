@@ -164,10 +164,20 @@ const AdminMenu = () => {
               </Button>
             ))}
           </div>
-          <Button variant="hero" onClick={() => { resetForm(); setShowForm(true); }}>
-            <Plus className="w-4 h-4" /> আইটেম যোগ করুন
-          </Button>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-muted-foreground bg-secondary px-3 py-1.5 rounded-full">
+              {menuItems.length}/{formatLimit(limits.maxMenuItems)} আইটেম
+            </span>
+            <Button variant="hero" onClick={() => { resetForm(); setShowForm(true); }} disabled={isAtMenuLimit}>
+              <Plus className="w-4 h-4" /> আইটেম যোগ করুন
+            </Button>
+          </div>
         </div>
+        {isAtMenuLimit && (
+          <div className="bg-warning/10 border border-warning/30 rounded-xl p-3 text-sm text-warning flex items-center gap-2">
+            ⚠️ আপনার {limits.label} প্ল্যানের মেনু আইটেম লিমিট ({formatLimit(limits.maxMenuItems)}) পূর্ণ হয়েছে। আরো যোগ করতে প্ল্যান আপগ্রেড করুন।
+          </div>
+        )
 
         {/* Add/Edit Dialog */}
         <Dialog open={showForm} onOpenChange={setShowForm}>
