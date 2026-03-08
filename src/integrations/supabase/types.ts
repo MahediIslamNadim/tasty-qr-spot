@@ -191,6 +191,7 @@ export type Database = {
         Row: {
           admin_notes: string | null
           amount: number
+          billing_cycle: string
           created_at: string
           id: string
           payment_method: string
@@ -205,6 +206,7 @@ export type Database = {
         Insert: {
           admin_notes?: string | null
           amount?: number
+          billing_cycle?: string
           created_at?: string
           id?: string
           payment_method?: string
@@ -219,6 +221,7 @@ export type Database = {
         Update: {
           admin_notes?: string | null
           amount?: number
+          billing_cycle?: string
           created_at?: string
           id?: string
           payment_method?: string
