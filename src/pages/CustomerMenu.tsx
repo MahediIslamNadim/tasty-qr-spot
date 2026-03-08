@@ -188,7 +188,7 @@ const CustomerMenu = () => {
               <h1 className="font-display font-bold text-foreground text-lg leading-tight">{restaurant?.name || "Restaurant"}</h1>
               <p className="text-xs text-muted-foreground flex items-center gap-1.5">
                 <span className="inline-block w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-                টেবিল {tableName} • লাইভ মেনু
+                টেবিল {tableName}{seatNumber ? ` • সিট ${seatNumber}` : ""} • লাইভ মেনু
               </p>
             </div>
           </div>
