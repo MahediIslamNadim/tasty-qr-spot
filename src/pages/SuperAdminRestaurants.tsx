@@ -161,11 +161,12 @@ const SuperAdminRestaurants = () => {
                       </td>
                       <td className="p-4">
                         <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          r.status === "active" ? "bg-success/10 text-success" :
+                          r.status === "active_paid" ? "bg-success/10 text-success" :
+                          r.status === "active" ? "bg-primary/10 text-primary" :
                           r.status === "pending" ? "bg-warning/10 text-warning" :
                           "bg-muted text-muted-foreground"
                         }`}>
-                          {r.status === "active" ? "সক্রিয়" : r.status === "pending" ? "পেন্ডিং" : "নিষ্ক্রিয়"}
+                          {r.status === "active_paid" ? "পেইড ✓" : r.status === "active" ? "ট্রায়াল" : r.status === "pending" ? "পেন্ডিং" : "নিষ্ক্রিয়"}
                         </span>
                       </td>
                       <td className="p-4 text-right">
@@ -213,13 +214,14 @@ const SuperAdminRestaurants = () => {
               <Label>ফোন</Label>
               <Input value={formPhone} onChange={e => setFormPhone(e.target.value)} placeholder="+880..." />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>স্ট্যাটাস</Label>
                 <Select value={formStatus} onValueChange={setFormStatus}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="active">সক্রিয়</SelectItem>
+                    <SelectItem value="active">সক্রিয় (ট্রায়াল)</SelectItem>
+                    <SelectItem value="active_paid">সক্রিয় (পেইড)</SelectItem>
                     <SelectItem value="pending">পেন্ডিং</SelectItem>
                     <SelectItem value="inactive">নিষ্ক্রিয়</SelectItem>
                   </SelectContent>
@@ -230,9 +232,9 @@ const SuperAdminRestaurants = () => {
                 <Select value={formPlan} onValueChange={setFormPlan}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="basic">Basic</SelectItem>
-                    <SelectItem value="premium">Premium</SelectItem>
-                    <SelectItem value="enterprise">Enterprise</SelectItem>
+                    <SelectItem value="basic">Basic — ৫০০ টাকা/মাস</SelectItem>
+                    <SelectItem value="premium">Premium — ১,০০০ টাকা/মাস</SelectItem>
+                    <SelectItem value="enterprise">Enterprise — ২,৫০০ টাকা/মাস</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
