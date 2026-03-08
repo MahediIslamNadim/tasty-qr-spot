@@ -192,6 +192,50 @@ const WaiterDashboard = () => {
           </div>
         </div>
 
+        {/* Table Customer Overview */}
+        <div>
+          <h2 className="text-lg font-display font-semibold text-foreground mb-3 flex items-center gap-2">
+            <Users className="w-5 h-5 text-primary" /> টেবিল ওভারভিউ
+          </h2>
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
+            {tables.map((table: any) => {
+              const hasCustomers = (table.current_customers || 0) > 0;
+              return (
+                <div
+                  key={table.id}
+                  className={`rounded-xl border p-3 text-center transition-all ${hasCustomers ? "border-primary/40 bg-primary/5" : "border-border/40 bg-secondary/30"}`}
+                >
+                  <p className="font-display font-bold text-foreground text-sm">{table.name}</p>
+                  <p className={`text-lg font-bold ${hasCustomers ? "text-primary" : "text-muted-foreground"}`}>
+                    👤 {table.current_customers || 0}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground">{table.seats} সিট</p>
+                  <div className="flex items-center justify-center gap-1 mt-1.5">
+                    <button
+                      onClick={() => {
+                        const nc = Math.max(0, (table.current_customers || 0) - 1);
+                        supabase.from("restaurant_tables").update({ current_customers: nc }).eq("id", table.id).then(() => queryClient.invalidateQueries({ queryKey: ["waiter-tables", restaurantId] }));
+                      }}
+                      className="w-6 h-6 rounded-md bg-card border border-border flex items-center justify-center hover:bg-accent active:scale-90 transition-all"
+                    >
+                      <UserMinus className="w-3 h-3 text-destructive" />
+                    </button>
+                    <button
+                      onClick={() => {
+                        const nc = Math.min(table.seats, (table.current_customers || 0) + 1);
+                        supabase.from("restaurant_tables").update({ current_customers: nc }).eq("id", table.id).then(() => queryClient.invalidateQueries({ queryKey: ["waiter-tables", restaurantId] }));
+                      }}
+                      className="w-6 h-6 rounded-md bg-primary text-primary-foreground flex items-center justify-center active:scale-90 transition-all"
+                    >
+                      <UserPlus className="w-3 h-3" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
         <div>
           <h2 className="text-lg font-display font-semibold text-foreground mb-4">অ্যাক্টিভ অর্ডার</h2>
           {orders.length === 0 ? (
