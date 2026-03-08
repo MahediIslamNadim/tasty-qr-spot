@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { QrCode, Plus, Edit, Users, Trash2, ShoppingCart } from "lucide-react";
+import { QrCode, Plus, Edit, Users, Trash2, ShoppingCart, UserPlus, UserMinus } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { getPlanLimits, formatLimit } from "@/lib/planLimits";
 import { supabase } from "@/integrations/supabase/client";
