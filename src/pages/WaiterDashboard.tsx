@@ -56,6 +56,20 @@ const WaiterDashboard = () => {
     enabled: !!restaurantId,
   });
 
+  const { data: tables = [] } = useQuery({
+    queryKey: ["waiter-tables", restaurantId],
+    queryFn: async () => {
+      if (!restaurantId) return [];
+      const { data } = await supabase
+        .from("restaurant_tables")
+        .select("id, name, seats, status, current_customers")
+        .eq("restaurant_id", restaurantId)
+        .order("name");
+      return data || [];
+    },
+    enabled: !!restaurantId,
+  });
+
   // Detect new orders and play sound
   useEffect(() => {
     if (!orders.length && isFirstLoadRef.current) return;
