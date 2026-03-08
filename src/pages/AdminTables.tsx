@@ -39,6 +39,20 @@ const AdminTables = () => {
     enabled: !!restaurantId,
   });
 
+  // Fetch seats for all tables
+  const { data: allSeats = [] } = useQuery({
+    queryKey: ["all-seats", restaurantId],
+    queryFn: async () => {
+      if (!restaurantId) return [];
+      const { data } = await supabase
+        .from("table_seats")
+        .select("*")
+        .eq("restaurant_id", restaurantId);
+      return data || [];
+    },
+    enabled: !!restaurantId,
+  });
+
   // Fetch active orders per table
   const { data: tableOrders = {} } = useQuery({
     queryKey: ["table-orders", restaurantId],
