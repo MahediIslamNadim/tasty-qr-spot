@@ -14,7 +14,8 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const AdminTables = () => {
-  const { restaurantId } = useAuth();
+  const { restaurantId, restaurantPlan } = useAuth();
+  const limits = getPlanLimits(restaurantPlan);
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [editingTable, setEditingTable] = useState<any>(null);
