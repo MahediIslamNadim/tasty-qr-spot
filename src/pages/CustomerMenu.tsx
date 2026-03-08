@@ -30,11 +30,13 @@ const CustomerMenu = () => {
   const { restaurantId } = useParams();
   const [searchParams] = useSearchParams();
   const tableId = searchParams.get("table");
+  const seatId = searchParams.get("seat");
   const isDemo = !restaurantId;
 
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [restaurant, setRestaurant] = useState<any>(null);
   const [tableName, setTableName] = useState<string>("N/A");
+  const [seatNumber, setSeatNumber] = useState<number | null>(null);
   const [categories, setCategories] = useState<string[]>(["সব"]);
   const [activeCategory, setActiveCategory] = useState("সব");
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -77,6 +79,16 @@ const CustomerMenu = () => {
       if (tableId) {
         const { data: tableData } = await supabase.from("restaurant_tables").select("name").eq("id", tableId).single();
         if (tableData) setTableName(tableData.name);
+      }
+
+      // If seat QR, fetch seat info and mark occupied
+      if (seatId) {
+        const { data: seatData } = await supabase.from("table_seats").select("seat_number").eq("id", seatId).single();
+        if (seatData) {
+          setSeatNumber(seatData.seat_number);
+          // Mark seat as occupied
+          await supabase.from("table_seats").update({ status: "occupied" }).eq("id", seatId);
+        }
       }
 
       setLoading(false);
@@ -122,6 +134,7 @@ const CustomerMenu = () => {
         .insert({
           restaurant_id: restaurantId!,
           table_id: tableId || null,
+          seat_id: seatId || null,
           total: totalPrice,
           status: "pending",
         })
@@ -175,7 +188,7 @@ const CustomerMenu = () => {
               <h1 className="font-display font-bold text-foreground text-lg leading-tight">{restaurant?.name || "Restaurant"}</h1>
               <p className="text-xs text-muted-foreground flex items-center gap-1.5">
                 <span className="inline-block w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-                টেবিল {tableName} • লাইভ মেনু
+                টেবিল {tableName}{seatNumber ? ` • সিট ${seatNumber}` : ""} • লাইভ মেনু
               </p>
             </div>
           </div>
