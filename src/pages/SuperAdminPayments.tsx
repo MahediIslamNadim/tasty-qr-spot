@@ -64,7 +64,7 @@ const SuperAdminPayments = () => {
   );
 
   const approveMutation = useMutation({
-    mutationFn: async ({ paymentId, restaurantId, plan }: { paymentId: string; restaurantId: string; plan: string }) => {
+    mutationFn: async ({ paymentId, restaurantId, plan, userId }: { paymentId: string; restaurantId: string; plan: string; userId: string }) => {
       // Update payment status
       const { error: payError } = await supabase
         .from("payment_requests" as any)
@@ -78,6 +78,14 @@ const SuperAdminPayments = () => {
         .update({ status: "active_paid", plan, updated_at: new Date().toISOString() })
         .eq("id", restaurantId);
       if (restError) throw restError;
+
+      // Send notification to user
+      await supabase.from("notifications" as any).insert({
+        user_id: userId,
+        title: "পেমেন্ট অনুমোদিত ✅",
+        message: `আপনার ${plan} প্ল্যানের পেমেন্ট অনুমোদিত হয়েছে। আপনার রেস্টুরেন্ট এখন সক্রিয়!`,
+        type: "success",
+      } as any);
     },
     onSuccess: () => {
       toast.success("পেমেন্ট অনুমোদিত এবং রেস্টুরেন্ট সক্রিয় করা হয়েছে!");
@@ -90,12 +98,20 @@ const SuperAdminPayments = () => {
   });
 
   const rejectMutation = useMutation({
-    mutationFn: async (paymentId: string) => {
+    mutationFn: async ({ paymentId, userId }: { paymentId: string; userId: string }) => {
       const { error } = await supabase
         .from("payment_requests" as any)
         .update({ status: "rejected", admin_notes: adminNotes || null, updated_at: new Date().toISOString() } as any)
         .eq("id", paymentId);
       if (error) throw error;
+
+      // Send notification to user
+      await supabase.from("notifications" as any).insert({
+        user_id: userId,
+        title: "পেমেন্ট প্রত্যাখ্যাত ❌",
+        message: `আপনার পেমেন্ট প্রত্যাখ্যাত হয়েছে।${adminNotes ? ` কারণ: ${adminNotes}` : " বিস্তারিত জানতে যোগাযোগ করুন।"}`,
+        type: "error",
+      } as any);
     },
     onSuccess: () => {
       toast.success("পেমেন্ট প্রত্যাখ্যান করা হয়েছে");
@@ -228,6 +244,7 @@ const SuperAdminPayments = () => {
                       paymentId: selectedPayment.id,
                       restaurantId: selectedPayment.restaurant_id,
                       plan: selectedPayment.plan,
+                      userId: selectedPayment.user_id,
                     })}
                     disabled={approveMutation.isPending}
                   >
@@ -236,7 +253,7 @@ const SuperAdminPayments = () => {
                   </Button>
                   <Button
                     variant="destructive"
-                    onClick={() => rejectMutation.mutate(selectedPayment.id)}
+                    onClick={() => rejectMutation.mutate({ paymentId: selectedPayment.id, userId: selectedPayment.user_id })}
                     disabled={rejectMutation.isPending}
                   >
                     {rejectMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <XCircle className="w-4 h-4 mr-1" />}
