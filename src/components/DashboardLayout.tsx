@@ -15,6 +15,9 @@ const DashboardLayout = ({ children, role, title }: DashboardLayoutProps) => {
       <main className="flex-1 overflow-auto">
         <header className="h-16 border-b border-border flex items-center px-8 bg-card/50 backdrop-blur-sm sticky top-0 z-10">
           <h1 className="text-xl font-display font-semibold text-foreground">{title}</h1>
+          <div className="ml-auto">
+            <NotificationBell />
+          </div>
         </header>
         <div className="p-8">
           {children}

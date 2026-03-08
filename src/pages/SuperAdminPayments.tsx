@@ -98,12 +98,20 @@ const SuperAdminPayments = () => {
   });
 
   const rejectMutation = useMutation({
-    mutationFn: async (paymentId: string) => {
+    mutationFn: async ({ paymentId, userId }: { paymentId: string; userId: string }) => {
       const { error } = await supabase
         .from("payment_requests" as any)
         .update({ status: "rejected", admin_notes: adminNotes || null, updated_at: new Date().toISOString() } as any)
         .eq("id", paymentId);
       if (error) throw error;
+
+      // Send notification to user
+      await supabase.from("notifications" as any).insert({
+        user_id: userId,
+        title: "পেমেন্ট প্রত্যাখ্যাত ❌",
+        message: `আপনার পেমেন্ট প্রত্যাখ্যাত হয়েছে।${adminNotes ? ` কারণ: ${adminNotes}` : " বিস্তারিত জানতে যোগাযোগ করুন।"}`,
+        type: "error",
+      } as any);
     },
     onSuccess: () => {
       toast.success("পেমেন্ট প্রত্যাখ্যান করা হয়েছে");
