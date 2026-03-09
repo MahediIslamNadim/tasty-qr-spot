@@ -9,9 +9,9 @@ import { AlertTriangle, Crown, LogOut, CheckCircle, Loader2, Smartphone } from "
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-const plans = [
+const paidPlans = [
   { id: "basic", name: "Basic", price: 500, priceText: "৫০০ টাকা/মাস", features: ["মেনু ম্যানেজমেন্ট", "QR কোড", "অর্ডার ম্যানেজমেন্ট"] },
-  { id: "premium", name: "Premium", price: 1000, priceText: "১,০০০ টাকা/মাস", features: ["সব Basic ফিচার", "এনালিটিক্স", "স্টাফ ম্যানেজমেন্ট", "প্রায়োরিটি সাপোর্ট"] },
+  { id: "premium", name: "Premium", price: 1000, priceText: "১,০০০ টাকা/মাস", features: ["সব Basic ফিচার", "এনালিটিক্স", "স্টাফ ম্যানেজমেন্ট", "প্রায়োরিটি সাপোর্ট"], popular: true },
   { id: "enterprise", name: "Enterprise", price: 2500, priceText: "২,৫০০ টাকা/মাস", features: ["সব Premium ফিচার", "মাল্টি-ব্রাঞ্চ", "কাস্টম ব্র্যান্ডিং", "ডেডিকেটেড সাপোর্ট"] },
 ];
 
