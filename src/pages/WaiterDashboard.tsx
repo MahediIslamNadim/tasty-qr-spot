@@ -49,7 +49,7 @@ const WaiterDashboard = () => {
         .from("orders")
         .select("*, restaurant_tables(name), table_seats(seat_number), order_items(id, name, quantity, price, menu_item_id)")
         .eq("restaurant_id", restaurantId)
-        .in("status", ["pending", "preparing"])
+        .in("status", ["pending", "preparing", "served"])
         .order("created_at", { ascending: false });
       return data || [];
     },
@@ -156,6 +156,7 @@ const WaiterDashboard = () => {
 
   const pendingCount = orders.filter((o: any) => o.status === "pending").length;
   const preparingCount = orders.filter((o: any) => o.status === "preparing").length;
+  const servedCount = orders.filter((o: any) => o.status === "served").length;
 
   const timeAgo = (date: string) => {
     const diff = Math.floor((Date.now() - new Date(date).getTime()) / 60000);
@@ -167,7 +168,7 @@ const WaiterDashboard = () => {
   return (
     <DashboardLayout role="waiter" title="ওয়েটার ড্যাশবোর্ড">
       <div className="space-y-6 animate-fade-up relative">
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-4 gap-4">
           <button
             onClick={() => setSoundEnabled(!soundEnabled)}
             className={`absolute top-4 right-4 p-2 rounded-full transition-all ${soundEnabled ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}
@@ -178,7 +179,7 @@ const WaiterDashboard = () => {
           <div className="stat-card text-center">
             <ShoppingCart className="w-6 h-6 text-primary mx-auto mb-2" />
             <p className="text-2xl font-display font-bold text-foreground">{orders.length}</p>
-            <p className="text-xs text-muted-foreground">অ্যাক্টিভ অর্ডার</p>
+            <p className="text-xs text-muted-foreground">মোট অর্ডার</p>
           </div>
           <div className="stat-card text-center">
             <Clock className="w-6 h-6 text-warning mx-auto mb-2" />
@@ -186,9 +187,14 @@ const WaiterDashboard = () => {
             <p className="text-xs text-muted-foreground">পেন্ডিং</p>
           </div>
           <div className="stat-card text-center">
-            <CheckCircle className="w-6 h-6 text-success mx-auto mb-2" />
+            <CheckCircle className="w-6 h-6 text-info mx-auto mb-2" />
             <p className="text-2xl font-display font-bold text-foreground">{preparingCount}</p>
             <p className="text-xs text-muted-foreground">প্রস্তুত হচ্ছে</p>
+          </div>
+          <div className="stat-card text-center">
+            <CheckCircle className="w-6 h-6 text-success mx-auto mb-2" />
+            <p className="text-2xl font-display font-bold text-foreground">{servedCount}</p>
+            <p className="text-xs text-muted-foreground">সার্ভ করা</p>
           </div>
         </div>
 
@@ -279,6 +285,11 @@ const WaiterDashboard = () => {
                         {order.status === "preparing" && (
                           <Button size="sm" variant="default" onClick={() => updateStatus.mutate({ id: order.id, status: "served" })}>
                             সার্ভ করুন
+                          </Button>
+                        )}
+                        {order.status === "served" && (
+                          <Button size="sm" variant="hero" className="bg-success hover:bg-success/90" onClick={() => updateStatus.mutate({ id: order.id, status: "completed" })}>
+                            <CheckCircle className="w-3.5 h-3.5" /> কমপ্লিট
                           </Button>
                         )}
                       </div>
