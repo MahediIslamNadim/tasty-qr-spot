@@ -7,20 +7,32 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { UserPlus, Trash2, Users, Shield } from "lucide-react";
+import { UserPlus, Trash2, Users, Shield, Pencil } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+interface StaffMember {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  role: string;
+}
+
 const AdminStaff = () => {
   const { restaurantId } = useAuth();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editingStaff, setEditingStaff] = useState<StaffMember | null>(null);
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<"waiter" | "admin">("waiter");
+  const [editName, setEditName] = useState("");
+  const [editRole, setEditRole] = useState<"waiter" | "admin">("waiter");
 
   const { data: staff = [], isLoading } = useQuery({
     queryKey: ["staff", restaurantId],
@@ -117,6 +129,44 @@ const AdminStaff = () => {
     onError: (err: any) => toast.error(err.message),
   });
 
+  const editStaffMutation = useMutation({
+    mutationFn: async () => {
+      if (!editingStaff) return;
+      
+      // Update profile name
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({ full_name: editName })
+        .eq("id", editingStaff.id);
+      
+      if (profileError) throw profileError;
+      
+      // Update role if changed
+      if (editRole !== editingStaff.role) {
+        const { error: roleError } = await supabase
+          .from("user_roles")
+          .update({ role: editRole })
+          .eq("user_id", editingStaff.id);
+        
+        if (roleError) throw roleError;
+      }
+    },
+    onSuccess: () => {
+      toast.success("কর্মী তথ্য আপডেট হয়েছে");
+      setEditOpen(false);
+      setEditingStaff(null);
+      queryClient.invalidateQueries({ queryKey: ["staff"] });
+    },
+    onError: (err: any) => toast.error(err.message || "আপডেট করতে সমস্যা হয়েছে"),
+  });
+
+  const openEditDialog = (staff: StaffMember) => {
+    setEditingStaff(staff);
+    setEditName(staff.name);
+    setEditRole(staff.role as "waiter" | "admin");
+    setEditOpen(true);
+  };
+
   return (
     <DashboardLayout role="admin" title="কর্মী ম্যানেজমেন্ট">
       <div className="space-y-6 animate-fade-up">
@@ -162,6 +212,36 @@ const AdminStaff = () => {
           </Dialog>
         </div>
 
+        {/* Edit Dialog */}
+        <Dialog open={editOpen} onOpenChange={setEditOpen}>
+          <DialogContent>
+            <DialogHeader><DialogTitle className="font-display">কর্মী তথ্য সম্পাদনা</DialogTitle></DialogHeader>
+            <div className="space-y-4 pt-4">
+              <div className="space-y-2">
+                <Label>নাম</Label>
+                <Input value={editName} onChange={e => setEditName(e.target.value)} placeholder="কর্মীর নাম" />
+              </div>
+              <div className="space-y-2">
+                <Label>ইমেইল</Label>
+                <Input value={editingStaff?.email || ""} disabled className="opacity-60" />
+              </div>
+              <div className="space-y-2">
+                <Label>ভূমিকা</Label>
+                <Select value={editRole} onValueChange={(v) => setEditRole(v as "waiter" | "admin")}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="waiter">ওয়েটার</SelectItem>
+                    <SelectItem value="admin">অ্যাডমিন</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button className="w-full" variant="hero" onClick={() => editStaffMutation.mutate()} disabled={editStaffMutation.isPending || !editName}>
+                {editStaffMutation.isPending ? "আপডেট হচ্ছে..." : "আপডেট করুন"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
         <div className="grid gap-4">
           {isLoading && <p className="text-center text-muted-foreground py-8">লোড হচ্ছে...</p>}
           {!isLoading && staff.length === 0 && (
@@ -188,6 +268,9 @@ const AdminStaff = () => {
                   <Badge variant={s.role === "admin" ? "default" : "secondary"}>
                     {s.role === "admin" ? "অ্যাডমিন" : "ওয়েটার"}
                   </Badge>
+                  <Button variant="ghost" size="icon" onClick={() => openEditDialog(s)} className="text-muted-foreground hover:text-primary">
+                    <Pencil className="w-4 h-4" />
+                  </Button>
                   <Button variant="ghost" size="icon" onClick={() => removeStaffMutation.mutate(s.id)} className="text-destructive hover:text-destructive">
                     <Trash2 className="w-4 h-4" />
                   </Button>
