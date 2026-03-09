@@ -129,6 +129,44 @@ const AdminStaff = () => {
     onError: (err: any) => toast.error(err.message),
   });
 
+  const editStaffMutation = useMutation({
+    mutationFn: async () => {
+      if (!editingStaff) return;
+      
+      // Update profile name
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({ full_name: editName })
+        .eq("id", editingStaff.id);
+      
+      if (profileError) throw profileError;
+      
+      // Update role if changed
+      if (editRole !== editingStaff.role) {
+        const { error: roleError } = await supabase
+          .from("user_roles")
+          .update({ role: editRole })
+          .eq("user_id", editingStaff.id);
+        
+        if (roleError) throw roleError;
+      }
+    },
+    onSuccess: () => {
+      toast.success("কর্মী তথ্য আপডেট হয়েছে");
+      setEditOpen(false);
+      setEditingStaff(null);
+      queryClient.invalidateQueries({ queryKey: ["staff"] });
+    },
+    onError: (err: any) => toast.error(err.message || "আপডেট করতে সমস্যা হয়েছে"),
+  });
+
+  const openEditDialog = (staff: StaffMember) => {
+    setEditingStaff(staff);
+    setEditName(staff.name);
+    setEditRole(staff.role as "waiter" | "admin");
+    setEditOpen(true);
+  };
+
   return (
     <DashboardLayout role="admin" title="কর্মী ম্যানেজমেন্ট">
       <div className="space-y-6 animate-fade-up">
