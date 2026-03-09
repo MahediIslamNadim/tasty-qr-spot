@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { UtensilsCrossed, Users, Armchair } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const CustomerSeatSelect = () => {
   const { restaurantId } = useParams();
@@ -31,6 +32,21 @@ const CustomerSeatSelect = () => {
     };
     fetchData();
   }, [restaurantId, tableId]);
+
+  // Realtime seat status updates
+  useEffect(() => {
+    if (!tableId) return;
+    const channel = supabase
+      .channel(`seat-status-${tableId}`)
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "table_seats", filter: `table_id=eq.${tableId}` }, (payload) => {
+        setSeats(prev => prev.map(s => s.id === payload.new.id ? { ...s, ...payload.new } : s));
+        if (payload.new.status === "occupied" && payload.old?.status === "available") {
+          toast.info(`সিট ${payload.new.seat_number} এইমাত্র ব্যস্ত হয়েছে`);
+        }
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [tableId]);
 
   const selectSeat = (seatId: string) => {
     navigate(`/menu/${restaurantId}?table=${tableId}&seat=${seatId}`);
