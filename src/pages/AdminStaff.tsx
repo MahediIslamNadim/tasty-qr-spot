@@ -7,20 +7,32 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { UserPlus, Trash2, Users, Shield } from "lucide-react";
+import { UserPlus, Trash2, Users, Shield, Pencil } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+interface StaffMember {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  role: string;
+}
+
 const AdminStaff = () => {
   const { restaurantId } = useAuth();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editingStaff, setEditingStaff] = useState<StaffMember | null>(null);
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<"waiter" | "admin">("waiter");
+  const [editName, setEditName] = useState("");
+  const [editRole, setEditRole] = useState<"waiter" | "admin">("waiter");
 
   const { data: staff = [], isLoading } = useQuery({
     queryKey: ["staff", restaurantId],
