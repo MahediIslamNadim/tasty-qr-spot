@@ -48,6 +48,7 @@ const getCategoryColor = (category: string) => {
 const CustomerMenu = () => {
   const { restaurantId } = useParams();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const tableId = searchParams.get("table");
   const seatId = searchParams.get("seat");
   const isDemo = !restaurantId;
