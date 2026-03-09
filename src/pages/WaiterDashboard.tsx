@@ -282,6 +282,11 @@ const WaiterDashboard = () => {
                             সার্ভ করুন
                           </Button>
                         )}
+                        {order.status === "served" && (
+                          <Button size="sm" variant="hero" className="bg-success hover:bg-success/90" onClick={() => updateStatus.mutate({ id: order.id, status: "completed" })}>
+                            <CheckCircle className="w-3.5 h-3.5" /> কমপ্লিট
+                          </Button>
+                        )}
                       </div>
                     </div>
                   </CardContent>
