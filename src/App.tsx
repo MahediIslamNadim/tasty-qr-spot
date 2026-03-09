@@ -59,6 +59,8 @@ const App = () => (
             
             {/* Waiter */}
             <Route path="/waiter" element={<ProtectedRoute allowedRoles={["waiter", "admin", "super_admin"]}><WaiterDashboard /></ProtectedRoute>} />
+            <Route path="/waiter/seats" element={<ProtectedRoute allowedRoles={["waiter", "admin", "super_admin"]}><WaiterSeats /></ProtectedRoute>} />
+            <Route path="/waiter/notifications" element={<ProtectedRoute allowedRoles={["waiter", "admin", "super_admin"]}><WaiterNotifications /></ProtectedRoute>} />
             
             {/* Trial Expired */}
             <Route path="/trial-expired" element={<TrialExpired />} />
