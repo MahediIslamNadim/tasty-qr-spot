@@ -338,18 +338,46 @@ const SuperAdminPayments = () => {
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={v => { setDialogOpen(v); if (!v) setSelectedPayment(null); }}>
-        <DialogContent>
-          <DialogHeader><DialogTitle className="font-display">পেমেন্ট রিভিউ</DialogTitle></DialogHeader>
+        <DialogContent className="max-w-md">
+          <DialogHeader><DialogTitle className="font-display">পেমেন্ট রিভিউ ও এডিট</DialogTitle></DialogHeader>
           {selectedPayment && (
             <div className="space-y-4 pt-2">
               <div className="bg-accent/50 rounded-lg p-4 space-y-2 text-sm">
                 <div className="flex justify-between"><span className="text-muted-foreground">রেস্টুরেন্ট:</span><span className="font-medium text-foreground">{selectedPayment.restaurant_name}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">প্ল্যান:</span><span className="font-medium text-foreground capitalize">{selectedPayment.plan} ({getBillingLabel(selectedPayment.billing_cycle)})</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">টাকা:</span><span className="font-bold text-primary">৳{selectedPayment.amount}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">মাধ্যম:</span><span className="font-medium text-foreground capitalize">{selectedPayment.payment_method}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">Transaction ID:</span><span className="font-mono text-foreground">{selectedPayment.transaction_id}</span></div>
                 {selectedPayment.phone_number && <div className="flex justify-between"><span className="text-muted-foreground">ফোন:</span><span className="text-foreground">{selectedPayment.phone_number}</span></div>}
                 <div className="flex justify-between"><span className="text-muted-foreground">তারিখ:</span><span className="text-foreground">{new Date(selectedPayment.created_at).toLocaleString("bn-BD")}</span></div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label>প্ল্যান</Label>
+                  <Select value={editPlan} onValueChange={v => setEditPlan(v as any)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="basic">Basic</SelectItem>
+                      <SelectItem value="premium">Premium</SelectItem>
+                      <SelectItem value="enterprise">Enterprise</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>টাকা (৳)</Label>
+                  <Input type="number" value={editAmount} onChange={e => setEditAmount(Number(e.target.value))} />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>স্ট্যাটাস</Label>
+                <Select value={editStatus} onValueChange={v => setEditStatus(v as any)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending">পেন্ডিং</SelectItem>
+                    <SelectItem value="approved">অনুমোদিত</SelectItem>
+                    <SelectItem value="rejected">প্রত্যাখ্যাত</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">
@@ -364,13 +392,13 @@ const SuperAdminPayments = () => {
                     onClick={() => approveMutation.mutate({
                       paymentId: selectedPayment.id,
                       restaurantId: selectedPayment.restaurant_id,
-                      plan: selectedPayment.plan,
+                      plan: editPlan,
                       userId: selectedPayment.user_id,
                     })}
                     disabled={approveMutation.isPending}
                   >
                     {approveMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <CheckCircle className="w-4 h-4 mr-1" />}
-                    অনুমোদন করুন
+                    অনুমোদন
                   </Button>
                   <Button
                     variant="destructive"
@@ -381,11 +409,40 @@ const SuperAdminPayments = () => {
                     প্রত্যাখ্যান
                   </Button>
                 </div>
-              ) : (
-                <p className="text-center text-sm text-muted-foreground">
-                  এই পেমেন্ট ইতিমধ্যে {selectedPayment.status === "approved" ? "অনুমোদিত" : "প্রত্যাখ্যাত"} হয়েছে।
-                </p>
-              )}
+              ) : null}
+
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => updatePaymentMutation.mutate()}
+                  disabled={updatePaymentMutation.isPending}
+                >
+                  {updatePaymentMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Edit className="w-4 h-4 mr-1" />}
+                  আপডেট সেভ করুন
+                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" size="icon">
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>পেমেন্ট রিকোয়েস্ট ডিলিট করবেন?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        এটি স্থায়ীভাবে মুছে যাবে। এই অ্যাকশন ফিরিয়ে আনা যাবে না।
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>বাতিল</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => deletePaymentMutation.mutate(selectedPayment.id)}>
+                        ডিলিট করুন
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             </div>
           )}
         </DialogContent>
