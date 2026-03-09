@@ -55,8 +55,15 @@ const Login = () => {
         if (error) throw error;
 
         if (data.user) {
+          // Only Basic plan gets 14-day trial
+          const isBasicPlan = selectedPlan === "basic";
           const trialEndsAt = new Date();
-          trialEndsAt.setDate(trialEndsAt.getDate() + 14);
+          if (isBasicPlan) {
+            trialEndsAt.setDate(trialEndsAt.getDate() + 14);
+          } else {
+            // Premium/Enterprise: no trial, set to past to force immediate payment
+            trialEndsAt.setDate(trialEndsAt.getDate() - 1);
+          }
 
           const { data: restaurant, error: restError } = await supabase
             .from("restaurants")
@@ -66,7 +73,7 @@ const Login = () => {
               phone: restaurantPhone.trim() || null,
               plan: selectedPlan,
               owner_id: data.user.id,
-              status: "active",
+              status: isBasicPlan ? "active" : "active",
               trial_ends_at: trialEndsAt.toISOString(),
             })
             .select()
@@ -98,7 +105,11 @@ const Login = () => {
             ]);
           }
 
-          toast.success("অ্যাকাউন্ট তৈরি হয়েছে! ১৪ দিনের ফ্রি ট্রায়াল শুরু হয়েছে।");
+          if (isBasicPlan) {
+            toast.success("অ্যাকাউন্ট তৈরি হয়েছে! ১৪ দিনের ফ্রি ট্রায়াল শুরু হয়েছে।");
+          } else {
+            toast.info("অ্যাকাউন্ট তৈরি হয়েছে! প্যাকেজ সক্রিয় করতে পেমেন্ট করুন।");
+          }
         }
       } else {
         const { error } = await supabase.auth.signInWithPassword({
