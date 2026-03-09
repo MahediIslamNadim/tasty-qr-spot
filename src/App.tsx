@@ -22,6 +22,8 @@ import AdminStaff from "./pages/AdminStaff";
 import AdminAnalytics from "./pages/AdminAnalytics";
 import AdminSettings from "./pages/AdminSettings";
 import WaiterDashboard from "./pages/WaiterDashboard";
+import WaiterSeats from "./pages/WaiterSeats";
+import WaiterNotifications from "./pages/WaiterNotifications";
 import CustomerMenu from "./pages/CustomerMenu";
 import TrialExpired from "./pages/TrialExpired";
 
