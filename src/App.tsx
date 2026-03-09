@@ -25,6 +25,7 @@ import WaiterDashboard from "./pages/WaiterDashboard";
 import WaiterSeats from "./pages/WaiterSeats";
 import WaiterNotifications from "./pages/WaiterNotifications";
 import CustomerMenu from "./pages/CustomerMenu";
+import CustomerSeatSelect from "./pages/CustomerSeatSelect";
 import TrialExpired from "./pages/TrialExpired";
 
 const queryClient = new QueryClient();
