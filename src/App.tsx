@@ -22,6 +22,8 @@ import AdminStaff from "./pages/AdminStaff";
 import AdminAnalytics from "./pages/AdminAnalytics";
 import AdminSettings from "./pages/AdminSettings";
 import WaiterDashboard from "./pages/WaiterDashboard";
+import WaiterSeats from "./pages/WaiterSeats";
+import WaiterNotifications from "./pages/WaiterNotifications";
 import CustomerMenu from "./pages/CustomerMenu";
 import TrialExpired from "./pages/TrialExpired";
 
@@ -57,6 +59,8 @@ const App = () => (
             
             {/* Waiter */}
             <Route path="/waiter" element={<ProtectedRoute allowedRoles={["waiter", "admin", "super_admin"]}><WaiterDashboard /></ProtectedRoute>} />
+            <Route path="/waiter/seats" element={<ProtectedRoute allowedRoles={["waiter", "admin", "super_admin"]}><WaiterSeats /></ProtectedRoute>} />
+            <Route path="/waiter/notifications" element={<ProtectedRoute allowedRoles={["waiter", "admin", "super_admin"]}><WaiterNotifications /></ProtectedRoute>} />
             
             {/* Trial Expired */}
             <Route path="/trial-expired" element={<TrialExpired />} />
