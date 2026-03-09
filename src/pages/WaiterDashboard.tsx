@@ -49,7 +49,7 @@ const WaiterDashboard = () => {
         .from("orders")
         .select("*, restaurant_tables(name), table_seats(seat_number), order_items(id, name, quantity, price, menu_item_id)")
         .eq("restaurant_id", restaurantId)
-        .in("status", ["pending", "preparing"])
+        .in("status", ["pending", "preparing", "served"])
         .order("created_at", { ascending: false });
       return data || [];
     },
