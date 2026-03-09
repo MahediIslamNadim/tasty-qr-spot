@@ -282,7 +282,51 @@ const SuperAdminPayments = () => {
                         </span>
                       </td>
                       <td className="p-4 text-right">
-                        <Button variant="outline" size="sm" onClick={() => openReview(p)}>রিভিউ</Button>
+                        <div className="flex items-center justify-end gap-2">
+                          <Button variant="outline" size="sm" onClick={() => openReview(p)}>
+                            <Eye className="w-4 h-4 mr-1" />
+                            রিভিউ
+                          </Button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                <MoreHorizontal className="w-4 h-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-44">
+                              <DropdownMenuItem onClick={() => openReview(p)}>
+                                <Edit className="w-4 h-4 mr-2" /> এডিট
+                              </DropdownMenuItem>
+                              {p.status !== "pending" && (
+                                <DropdownMenuItem onClick={() => reopenMutation.mutate({ paymentId: p.id })}>
+                                  <RefreshCw className="w-4 h-4 mr-2" /> পেন্ডিং করুন
+                                </DropdownMenuItem>
+                              )}
+                              <DropdownMenuSeparator />
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <button className="w-full text-left px-2 py-1.5 text-sm rounded-sm hover:bg-accent inline-flex items-center text-destructive">
+                                    <Trash2 className="w-4 h-4 mr-2" /> মুছুন
+                                  </button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>পেমেন্ট রিকোয়েস্ট ডিলিট করবেন?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      এটি স্থায়ীভাবে মুছে যাবে। Transaction ID: {p.transaction_id}
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>বাতিল</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => deletePaymentMutation.mutate(p.id)}>
+                                      ডিলিট করুন
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
                       </td>
                     </tr>
                   ))}
