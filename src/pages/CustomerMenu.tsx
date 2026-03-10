@@ -119,7 +119,6 @@ const CustomerMenu = () => {
         const { data: seatData } = await supabase.from("table_seats").select("seat_number").eq("id", seatId).single();
         if (seatData) {
           setSeatNumber(seatData.seat_number);
-          await supabase.from("table_seats").update({ status: "occupied" }).eq("id", seatId);
         }
       }
 
