@@ -53,7 +53,7 @@ export default function Index() {
         {emojis.map(e => (
           <span key={e.id} style={{
             position:"absolute", left:`${e.left}%`, bottom:"-50px",
-            fontSize:`${e.size}px`, opacity:0.04, userSelect:"none",
+            fontSize:`${e.size}px`, opacity:0.07, userSelect:"none",
             animation:`floatUp ${e.duration}s ${e.delay}s linear infinite`,
           }}>{e.emoji}</span>
         ))}
@@ -64,7 +64,7 @@ export default function Index() {
         position:"sticky", top:0, zIndex:100,
         backgroundColor: scrolled ? "rgba(10,10,10,0.95)" : "transparent",
         backdropFilter: scrolled ? "blur(24px)" : "none",
-        borderBottom: scrolled ? "1px solid rgba(201,168,76,0.15)" : "1px solid transparent",
+        borderBottom: scrolled ? "1px solid rgba(201,168,76,0.2)" : "1px solid transparent",
         transition:"all 0.5s ease",
       }}>
         <div style={{ maxWidth:1140, margin:"0 auto", padding:"0 32px", height:72, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
@@ -78,27 +78,27 @@ export default function Index() {
               <UtensilsCrossed size={22} color="#0a0a0a" />
             </div>
             <div>
-              <div style={{ fontFamily:"'Cormorant Garamond', serif", fontWeight:700, fontSize:20, color:"#f0e6cc", letterSpacing:"0.02em" }}>Tasty QR Spot</div>
-              <div style={{ fontSize:8, letterSpacing:"0.3em", color:"rgba(201,168,76,0.5)", textTransform:"uppercase", fontFamily:"monospace" }}>by NexCore Technologies</div>
+              <div style={{ fontFamily:"'Cormorant Garamond', serif", fontWeight:700, fontSize:20, color:"#FFFFFF", letterSpacing:"0.02em" }}>Tasty QR Spot</div>
+              <div style={{ fontSize:9, letterSpacing:"0.3em", color:"rgba(201,168,76,0.7)", textTransform:"uppercase", fontFamily:"monospace" }}>by NexCore Technologies</div>
             </div>
           </div>
 
           <div style={{ display:"flex", gap:40 }} className="hidden md:flex">
             {[["ফিচার","#features"],["প্রাইসিং","#pricing"],["ডেমো","/menu/demo"]].map(([l,h]) => (
-              <a key={l} href={h} style={{ fontSize:13, fontWeight:500, color:"rgba(232,220,200,0.6)", textDecoration:"none", letterSpacing:"0.05em", transition:"color 0.2s" }}
-                onMouseEnter={e => e.currentTarget.style.color="#c9a84c"}
-                onMouseLeave={e => e.currentTarget.style.color="rgba(232,220,200,0.6)"}>{l}</a>
+              <a key={l} href={h} style={{ fontSize:14, fontWeight:500, color:"rgba(255,255,255,0.75)", textDecoration:"none", letterSpacing:"0.05em", transition:"color 0.2s" }}
+                onMouseEnter={e => e.currentTarget.style.color="#f5d780"}
+                onMouseLeave={e => e.currentTarget.style.color="rgba(255,255,255,0.75)"}>{l}</a>
             ))}
           </div>
 
           <div style={{ display:"flex", gap:10 }}>
             <a href="/menu/demo" style={{
-              padding:"9px 20px", borderRadius:8, fontSize:13, fontWeight:500,
-              color:"rgba(201,168,76,0.8)", textDecoration:"none",
-              border:"1px solid rgba(201,168,76,0.25)", transition:"all 0.2s",
+              padding:"9px 20px", borderRadius:8, fontSize:13, fontWeight:600,
+              color:"#f5d780", textDecoration:"none",
+              border:"1px solid rgba(201,168,76,0.45)", transition:"all 0.2s",
             }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor="rgba(201,168,76,0.6)"; e.currentTarget.style.color="#c9a84c"; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor="rgba(201,168,76,0.25)"; e.currentTarget.style.color="rgba(201,168,76,0.8)"; }}>
+              onMouseEnter={e => { e.currentTarget.style.borderColor="rgba(201,168,76,0.9)"; e.currentTarget.style.backgroundColor="rgba(201,168,76,0.08)"; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor="rgba(201,168,76,0.45)"; e.currentTarget.style.backgroundColor="transparent"; }}>
               ডেমো
             </a>
             <a href="/login" style={{
@@ -117,16 +117,11 @@ export default function Index() {
 
       {/* ─── HERO ─── */}
       <section style={{ position:"relative", minHeight:"96vh", display:"flex", alignItems:"center", justifyContent:"center", overflow:"hidden" }}>
-        {/* Background */}
         <div style={{ position:"absolute", inset:0 }}>
-          <div style={{ position:"absolute", top:"10%", left:"50%", transform:"translateX(-50%)", width:800, height:800, borderRadius:"50%", background:"radial-gradient(circle, rgba(201,168,76,0.06) 0%, transparent 65%)" }} />
-          <div style={{ position:"absolute", top:"20%", right:"-10%", width:500, height:500, borderRadius:"50%", background:"radial-gradient(circle, rgba(201,168,76,0.04) 0%, transparent 70%)" }} />
-          <div style={{ position:"absolute", bottom:"10%", left:"-5%", width:400, height:400, borderRadius:"50%", background:"radial-gradient(circle, rgba(255,200,100,0.03) 0%, transparent 70%)" }} />
-          {/* Fine grid */}
-          <div style={{ position:"absolute", inset:0, backgroundImage:"linear-gradient(rgba(201,168,76,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(201,168,76,0.04) 1px, transparent 1px)", backgroundSize:"60px 60px" }} />
-          {/* Horizontal lines */}
-          <div style={{ position:"absolute", top:"35%", left:0, right:0, height:"1px", background:"linear-gradient(90deg, transparent, rgba(201,168,76,0.08), transparent)" }} />
-          <div style={{ position:"absolute", top:"65%", left:0, right:0, height:"1px", background:"linear-gradient(90deg, transparent, rgba(201,168,76,0.06), transparent)" }} />
+          <div style={{ position:"absolute", top:"10%", left:"50%", transform:"translateX(-50%)", width:800, height:800, borderRadius:"50%", background:"radial-gradient(circle, rgba(201,168,76,0.07) 0%, transparent 65%)" }} />
+          <div style={{ position:"absolute", top:"20%", right:"-10%", width:500, height:500, borderRadius:"50%", background:"radial-gradient(circle, rgba(201,168,76,0.05) 0%, transparent 70%)" }} />
+          <div style={{ position:"absolute", inset:0, backgroundImage:"linear-gradient(rgba(201,168,76,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(201,168,76,0.05) 1px, transparent 1px)", backgroundSize:"60px 60px" }} />
+          <div style={{ position:"absolute", top:"35%", left:0, right:0, height:"1px", background:"linear-gradient(90deg, transparent, rgba(201,168,76,0.12), transparent)" }} />
         </div>
 
         <div style={{ maxWidth:900, margin:"0 auto", padding:"80px 32px", position:"relative", zIndex:1, textAlign:"center" }}>
@@ -136,13 +131,13 @@ export default function Index() {
             <div style={{
               display:"inline-flex", alignItems:"center", gap:10,
               padding:"10px 24px", borderRadius:100,
-              border:"1px solid rgba(201,168,76,0.3)",
-              background:"linear-gradient(135deg, rgba(201,168,76,0.08), rgba(201,168,76,0.03))",
-              fontSize:12, fontWeight:500, color:"rgba(201,168,76,0.85)", letterSpacing:"0.08em",
+              border:"1px solid rgba(201,168,76,0.45)",
+              background:"linear-gradient(135deg, rgba(201,168,76,0.12), rgba(201,168,76,0.05))",
+              fontSize:12, fontWeight:600, color:"#f5d780", letterSpacing:"0.08em",
             }}>
-              <span style={{ width:5, height:5, borderRadius:"50%", background:gold, display:"inline-block", boxShadow:"0 0 8px rgba(201,168,76,0.8)", animation:"glow 2s infinite" }} />
+              <span style={{ width:6, height:6, borderRadius:"50%", background:gold, display:"inline-block", boxShadow:"0 0 8px rgba(201,168,76,0.9)", animation:"glow 2s infinite" }} />
               BANGLADESH'S PREMIER RESTAURANT SOLUTION
-              <span style={{ padding:"2px 10px", borderRadius:20, fontSize:10, fontWeight:700, background:"rgba(201,168,76,0.15)", color:"#c9a84c", letterSpacing:"0.1em" }}>NEW</span>
+              <span style={{ padding:"2px 10px", borderRadius:20, fontSize:10, fontWeight:700, background:"rgba(201,168,76,0.2)", color:"#f5d780", letterSpacing:"0.1em" }}>NEW</span>
             </div>
           </div>
 
@@ -152,12 +147,12 @@ export default function Index() {
               width:120, height:120, borderRadius:32,
               background: gold,
               display:"flex", alignItems:"center", justifyContent:"center",
-              boxShadow:"0 0 0 1px rgba(201,168,76,0.3), 0 0 60px rgba(201,168,76,0.25), 0 24px 48px rgba(0,0,0,0.5)",
+              boxShadow:"0 0 0 1px rgba(201,168,76,0.4), 0 0 60px rgba(201,168,76,0.3), 0 24px 48px rgba(0,0,0,0.5)",
               position:"relative", zIndex:1,
             }}>
               <UtensilsCrossed size={54} color="#0a0a0a" />
             </div>
-            <div style={{ position:"absolute", inset:-12, borderRadius:44, background:gold, opacity:0.12, filter:"blur(24px)", animation:"pulse 4s infinite" }} />
+            <div style={{ position:"absolute", inset:-12, borderRadius:44, background:gold, opacity:0.15, filter:"blur(24px)", animation:"pulse 4s infinite" }} />
           </div>
 
           {/* Headline */}
@@ -166,7 +161,7 @@ export default function Index() {
               fontFamily:"'Cormorant Garamond', serif",
               fontSize:"clamp(52px, 9vw, 108px)",
               fontWeight:700, lineHeight:1.02,
-              color:"#f0e6cc", marginBottom:8,
+              color:"#FFFFFF", marginBottom:8,
               letterSpacing:"-0.02em",
             }}>
               স্মার্ট রেস্টুরেন্ট
@@ -184,15 +179,15 @@ export default function Index() {
 
           {/* Divider */}
           <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:16, marginBottom:28, animation:"fadeUp 0.8s 0.35s ease both" }}>
-            <div style={{ height:"1px", width:60, background:"linear-gradient(90deg, transparent, rgba(201,168,76,0.4))" }} />
-            <span style={{ color:"rgba(201,168,76,0.5)", fontSize:16 }}>✦</span>
-            <div style={{ height:"1px", width:60, background:"linear-gradient(90deg, rgba(201,168,76,0.4), transparent)" }} />
+            <div style={{ height:"1px", width:60, background:"linear-gradient(90deg, transparent, rgba(201,168,76,0.6))" }} />
+            <span style={{ color:"rgba(201,168,76,0.8)", fontSize:16 }}>✦</span>
+            <div style={{ height:"1px", width:60, background:"linear-gradient(90deg, rgba(201,168,76,0.6), transparent)" }} />
           </div>
 
           {/* Subtext */}
-          <p style={{ fontSize:17, lineHeight:1.8, color:"rgba(232,220,200,0.55)", maxWidth:520, margin:"0 auto 44px", fontFamily:"'DM Sans', sans-serif", animation:"fadeUp 0.8s 0.45s ease both" }}>
+          <p style={{ fontSize:18, lineHeight:1.8, color:"rgba(255,255,255,0.8)", maxWidth:520, margin:"0 auto 44px", fontFamily:"'DM Sans', sans-serif", animation:"fadeUp 0.8s 0.45s ease both" }}>
             QR কোড স্ক্যান করুন, মেনু দেখুন, অর্ডার দিন —{" "}
-            <span style={{ color:"#c9a84c", fontWeight:600 }}>কোনো অ্যাপ ছাড়াই!</span>{" "}
+            <span style={{ color:"#f5d780", fontWeight:700 }}>কোনো অ্যাপ ছাড়াই!</span>{" "}
             রান্নাঘর রিয়েলটাইম অর্ডার পায়।
           </p>
 
@@ -212,12 +207,12 @@ export default function Index() {
             </a>
             <a href="/menu/demo" style={{
               padding:"16px 40px", borderRadius:10, fontSize:15, fontWeight:600,
-              color:"rgba(201,168,76,0.8)", textDecoration:"none",
-              border:"1px solid rgba(201,168,76,0.25)", transition:"all 0.3s",
+              color:"#f5d780", textDecoration:"none",
+              border:"1px solid rgba(201,168,76,0.45)", transition:"all 0.3s",
               fontFamily:"'DM Sans', sans-serif",
             }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor="rgba(201,168,76,0.6)"; e.currentTarget.style.backgroundColor="rgba(201,168,76,0.06)"; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor="rgba(201,168,76,0.25)"; e.currentTarget.style.backgroundColor="transparent"; }}>
+              onMouseEnter={e => { e.currentTarget.style.borderColor="rgba(201,168,76,0.9)"; e.currentTarget.style.backgroundColor="rgba(201,168,76,0.08)"; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor="rgba(201,168,76,0.45)"; e.currentTarget.style.backgroundColor="transparent"; }}>
               🎮 লাইভ ডেমো দেখুন
             </a>
           </div>
@@ -225,7 +220,7 @@ export default function Index() {
           {/* Trust */}
           <div style={{ display:"flex", gap:28, justifyContent:"center", flexWrap:"wrap", animation:"fadeUp 0.8s 0.65s ease both" }}>
             {["✓ ৭ দিন ফ্রি ট্রায়াল","✓ ক্রেডিট কার্ড লাগবে না","✓ যেকোনো সময় বাতিল"].map((t,i) => (
-              <span key={i} style={{ fontSize:12, color:"rgba(201,168,76,0.45)", fontFamily:"'DM Sans', sans-serif", letterSpacing:"0.03em" }}>{t}</span>
+              <span key={i} style={{ fontSize:13, color:"rgba(245,215,128,0.75)", fontFamily:"'DM Sans', sans-serif", letterSpacing:"0.03em", fontWeight:500 }}>{t}</span>
             ))}
           </div>
         </div>
@@ -236,11 +231,11 @@ export default function Index() {
         <div style={{ maxWidth:1100, margin:"0 auto" }}>
           <Reveal>
             <div style={{ textAlign:"center", marginBottom:72 }}>
-              <div style={{ fontSize:10, letterSpacing:"0.4em", color:"rgba(201,168,76,0.5)", textTransform:"uppercase", fontFamily:"monospace", marginBottom:16 }}>✦ কিভাবে কাজ করে ✦</div>
-              <h2 style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:"clamp(36px,5vw,60px)", fontWeight:700, color:"#f0e6cc", marginBottom:16 }}>
+              <div style={{ fontSize:11, letterSpacing:"0.4em", color:"#f5d780", textTransform:"uppercase", fontFamily:"monospace", marginBottom:16, fontWeight:600 }}>✦ কিভাবে কাজ করে ✦</div>
+              <h2 style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:"clamp(36px,5vw,60px)", fontWeight:700, color:"#FFFFFF", marginBottom:16 }}>
                 তিনটি সহজ{" "}<span style={goldText}>ধাপ</span>
               </h2>
-              <p style={{ fontSize:15, color:"rgba(232,220,200,0.4)", maxWidth:380, margin:"0 auto", fontFamily:"'DM Sans', sans-serif" }}>মিনিটের মধ্যে আপনার রেস্টুরেন্ট ডিজিটাল হয়ে যাক</p>
+              <p style={{ fontSize:16, color:"rgba(255,255,255,0.65)", maxWidth:380, margin:"0 auto", fontFamily:"'DM Sans', sans-serif" }}>মিনিটের মধ্যে আপনার রেস্টুরেন্ট ডিজিটাল হয়ে যাক</p>
             </div>
           </Reveal>
 
@@ -252,19 +247,18 @@ export default function Index() {
             ].map((f, i) => (
               <Reveal key={i} delay={i * 0.15}>
                 <div style={{
-                  padding:"44px 36px", backgroundColor:"#111111",
-                  border:"1px solid rgba(201,168,76,0.1)",
+                  padding:"44px 36px", backgroundColor:"#141414",
+                  border:"1px solid rgba(201,168,76,0.15)",
                   transition:"all 0.4s", position:"relative", overflow:"hidden",
                   borderRadius: i === 0 ? "20px 0 0 20px" : i === 2 ? "0 20px 20px 0" : "0",
-                  borderLeft: i > 0 ? "none" : "1px solid rgba(201,168,76,0.1)",
+                  borderLeft: i > 0 ? "none" : "1px solid rgba(201,168,76,0.15)",
                 }}
-                  onMouseEnter={e => { e.currentTarget.style.backgroundColor="#141414"; e.currentTarget.style.borderColor="rgba(201,168,76,0.3)"; }}
-                  onMouseLeave={e => { e.currentTarget.style.backgroundColor="#111111"; e.currentTarget.style.borderColor="rgba(201,168,76,0.1)"; }}>
-                  <div style={{ position:"absolute", top:24, right:24, fontFamily:"monospace", fontSize:48, fontWeight:800, color:"rgba(201,168,76,0.06)", lineHeight:1 }}>{f.step}</div>
+                  onMouseEnter={e => { e.currentTarget.style.backgroundColor="#1a1a1a"; e.currentTarget.style.borderColor="rgba(201,168,76,0.4)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.backgroundColor="#141414"; e.currentTarget.style.borderColor="rgba(201,168,76,0.15)"; }}>
+                  <div style={{ position:"absolute", top:24, right:24, fontFamily:"monospace", fontSize:48, fontWeight:800, color:"rgba(201,168,76,0.1)", lineHeight:1 }}>{f.step}</div>
                   <div style={{ fontSize:44, marginBottom:24 }}>{f.emoji}</div>
-                  <div style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:22, fontWeight:700, color:"#f0e6cc", marginBottom:12 }}>{f.title}</div>
-                  <div style={{ fontSize:14, color:"rgba(232,220,200,0.45)", lineHeight:1.8, fontFamily:"'DM Sans', sans-serif" }}>{f.desc}</div>
-                  {/* Bottom gold line on hover */}
+                  <div style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:24, fontWeight:700, color:"#FFFFFF", marginBottom:12 }}>{f.title}</div>
+                  <div style={{ fontSize:15, color:"rgba(255,255,255,0.7)", lineHeight:1.8, fontFamily:"'DM Sans', sans-serif" }}>{f.desc}</div>
                   <div style={{ position:"absolute", bottom:0, left:0, right:0, height:2, background:gold, opacity:0, transition:"opacity 0.3s" }} />
                 </div>
               </Reveal>
@@ -278,8 +272,8 @@ export default function Index() {
         <div style={{ maxWidth:1100, margin:"0 auto" }}>
           <Reveal>
             <div style={{ textAlign:"center", marginBottom:72 }}>
-              <div style={{ fontSize:10, letterSpacing:"0.4em", color:"rgba(201,168,76,0.5)", textTransform:"uppercase", fontFamily:"monospace", marginBottom:16 }}>✦ সুবিধাসমূহ ✦</div>
-              <h2 style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:"clamp(36px,5vw,60px)", fontWeight:700, color:"#f0e6cc" }}>
+              <div style={{ fontSize:11, letterSpacing:"0.4em", color:"#f5d780", textTransform:"uppercase", fontFamily:"monospace", marginBottom:16, fontWeight:600 }}>✦ সুবিধাসমূহ ✦</div>
+              <h2 style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:"clamp(36px,5vw,60px)", fontWeight:700, color:"#FFFFFF" }}>
                 সব কিছু <span style={goldText}>এক জায়গায়</span>
               </h2>
             </div>
@@ -296,15 +290,15 @@ export default function Index() {
             ].map((f, i) => (
               <Reveal key={i} delay={i * 0.07}>
                 <div style={{
-                  padding:"32px 28px", backgroundColor:"#0f0f0f",
-                  border:"1px solid rgba(201,168,76,0.08)",
+                  padding:"32px 28px", backgroundColor:"#111111",
+                  border:"1px solid rgba(201,168,76,0.12)",
                   transition:"all 0.3s", cursor:"default",
                 }}
-                  onMouseEnter={e => { e.currentTarget.style.backgroundColor="#121212"; e.currentTarget.style.borderColor="rgba(201,168,76,0.2)"; e.currentTarget.style.transform="translateY(-2px)"; }}
-                  onMouseLeave={e => { e.currentTarget.style.backgroundColor="#0f0f0f"; e.currentTarget.style.borderColor="rgba(201,168,76,0.08)"; e.currentTarget.style.transform="translateY(0)"; }}>
-                  <div style={{ fontSize:28, marginBottom:16 }}>{f.emoji}</div>
-                  <div style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:18, fontWeight:700, color:"#e8d98a", marginBottom:8 }}>{f.title}</div>
-                  <div style={{ fontSize:13, color:"rgba(232,220,200,0.4)", lineHeight:1.7, fontFamily:"'DM Sans', sans-serif" }}>{f.desc}</div>
+                  onMouseEnter={e => { e.currentTarget.style.backgroundColor="#161616"; e.currentTarget.style.borderColor="rgba(201,168,76,0.35)"; e.currentTarget.style.transform="translateY(-3px)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.backgroundColor="#111111"; e.currentTarget.style.borderColor="rgba(201,168,76,0.12)"; e.currentTarget.style.transform="translateY(0)"; }}>
+                  <div style={{ fontSize:32, marginBottom:16 }}>{f.emoji}</div>
+                  <div style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:20, fontWeight:700, color:"#f5d780", marginBottom:10 }}>{f.title}</div>
+                  <div style={{ fontSize:14, color:"rgba(255,255,255,0.7)", lineHeight:1.75, fontFamily:"'DM Sans', sans-serif" }}>{f.desc}</div>
                 </div>
               </Reveal>
             ))}
@@ -317,11 +311,11 @@ export default function Index() {
         <div style={{ maxWidth:1100, margin:"0 auto" }}>
           <Reveal>
             <div style={{ textAlign:"center", marginBottom:72 }}>
-              <div style={{ fontSize:10, letterSpacing:"0.4em", color:"rgba(201,168,76,0.5)", textTransform:"uppercase", fontFamily:"monospace", marginBottom:16 }}>✦ মূল্য পরিকল্পনা ✦</div>
-              <h2 style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:"clamp(36px,5vw,60px)", fontWeight:700, color:"#f0e6cc", marginBottom:12 }}>
+              <div style={{ fontSize:11, letterSpacing:"0.4em", color:"#f5d780", textTransform:"uppercase", fontFamily:"monospace", marginBottom:16, fontWeight:600 }}>✦ মূল্য পরিকল্পনা ✦</div>
+              <h2 style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:"clamp(36px,5vw,60px)", fontWeight:700, color:"#FFFFFF", marginBottom:12 }}>
                 সাশ্রয়ী <span style={goldText}>প্রাইসিং</span>
               </h2>
-              <p style={{ fontSize:15, color:"rgba(232,220,200,0.4)", fontFamily:"'DM Sans', sans-serif" }}>আপনার রেস্টুরেন্টের আকার অনুযায়ী প্ল্যান বেছে নিন</p>
+              <p style={{ fontSize:16, color:"rgba(255,255,255,0.65)", fontFamily:"'DM Sans', sans-serif" }}>আপনার রেস্টুরেন্টের আকার অনুযায়ী প্ল্যান বেছে নিন</p>
             </div>
           </Reveal>
 
@@ -334,9 +328,9 @@ export default function Index() {
               <Reveal key={i} delay={p.delay}>
                 <div style={{
                   borderRadius:20, padding:"40px 32px",
-                  backgroundColor: p.hot ? "#111111" : "#0f0f0f",
-                  border: p.hot ? "1px solid rgba(201,168,76,0.4)" : "1px solid rgba(201,168,76,0.1)",
-                  boxShadow: p.hot ? "0 0 60px rgba(201,168,76,0.08), inset 0 1px 0 rgba(201,168,76,0.15)" : "none",
+                  backgroundColor: p.hot ? "#141414" : "#111111",
+                  border: p.hot ? "1px solid rgba(201,168,76,0.5)" : "1px solid rgba(201,168,76,0.15)",
+                  boxShadow: p.hot ? "0 0 60px rgba(201,168,76,0.1), inset 0 1px 0 rgba(201,168,76,0.2)" : "none",
                   position:"relative", display:"flex", flexDirection:"column",
                   transform: p.hot ? "scale(1.02)" : "scale(1)",
                   transition:"all 0.3s",
@@ -353,20 +347,20 @@ export default function Index() {
                     }}>✦ সবচেয়ে জনপ্রিয়</div>
                   )}
 
-                  <div style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:24, fontWeight:700, color: p.hot ? "#e8d98a" : "#c4b99a", marginBottom:4 }}>{p.name}</div>
-                  <div style={{ fontSize:12, color:"rgba(232,220,200,0.35)", marginBottom:28, fontFamily:"'DM Sans', sans-serif" }}>{p.desc}</div>
+                  <div style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:26, fontWeight:700, color: p.hot ? "#f5d780" : "#FFFFFF", marginBottom:6 }}>{p.name}</div>
+                  <div style={{ fontSize:13, color:"rgba(255,255,255,0.55)", marginBottom:28, fontFamily:"'DM Sans', sans-serif" }}>{p.desc}</div>
 
                   <div style={{ marginBottom:32, display:"flex", alignItems:"baseline", gap:4 }}>
-                    <span style={{ fontSize:16, color:"rgba(201,168,76,0.6)", fontFamily:"'DM Sans', sans-serif" }}>৳</span>
-                    <span style={{ fontSize:56, fontWeight:700, fontFamily:"'Cormorant Garamond', serif", lineHeight:1, ...( p.hot ? goldText : { color:"#c4b99a" }) }}>{p.price}</span>
-                    <span style={{ fontSize:13, color:"rgba(232,220,200,0.35)", fontFamily:"'DM Sans', sans-serif" }}>/মাস</span>
+                    <span style={{ fontSize:18, color:"rgba(201,168,76,0.8)", fontFamily:"'DM Sans', sans-serif", fontWeight:600 }}>৳</span>
+                    <span style={{ fontSize:56, fontWeight:700, fontFamily:"'Cormorant Garamond', serif", lineHeight:1, ...( p.hot ? goldText : { color:"#FFFFFF" }) }}>{p.price}</span>
+                    <span style={{ fontSize:14, color:"rgba(255,255,255,0.5)", fontFamily:"'DM Sans', sans-serif" }}>/মাস</span>
                   </div>
 
-                  <div style={{ borderTop:"1px solid rgba(201,168,76,0.1)", paddingTop:28, marginBottom:28, flex:1 }}>
+                  <div style={{ borderTop:"1px solid rgba(201,168,76,0.15)", paddingTop:28, marginBottom:28, flex:1 }}>
                     {p.features.map((f, fi) => (
-                      <div key={fi} style={{ display:"flex", alignItems:"center", gap:10, marginBottom:12 }}>
+                      <div key={fi} style={{ display:"flex", alignItems:"center", gap:10, marginBottom:14 }}>
                         <span style={{ ...goldText, fontSize:12, fontWeight:800, flexShrink:0 }}>✦</span>
-                        <span style={{ fontSize:13, color:"rgba(232,220,200,0.55)", fontFamily:"'DM Sans', sans-serif" }}>{f}</span>
+                        <span style={{ fontSize:14, color:"rgba(255,255,255,0.8)", fontFamily:"'DM Sans', sans-serif" }}>{f}</span>
                       </div>
                     ))}
                   </div>
@@ -375,8 +369,8 @@ export default function Index() {
                     display:"block", textAlign:"center", padding:"14px",
                     borderRadius:10, fontSize:14, fontWeight:700, textDecoration:"none",
                     background: p.hot ? gold : "transparent",
-                    color: p.hot ? "#0a0a0a" : "rgba(201,168,76,0.7)",
-                    border: p.hot ? "none" : "1px solid rgba(201,168,76,0.25)",
+                    color: p.hot ? "#0a0a0a" : "#f5d780",
+                    border: p.hot ? "none" : "1px solid rgba(201,168,76,0.4)",
                     boxShadow: p.hot ? "0 6px 24px rgba(201,168,76,0.3)" : "none",
                     fontFamily:"'DM Sans', sans-serif", letterSpacing:"0.03em",
                     transition:"all 0.2s",
@@ -391,8 +385,8 @@ export default function Index() {
           </div>
 
           <Reveal delay={0.35}>
-            <p style={{ textAlign:"center", color:"rgba(201,168,76,0.35)", fontSize:13, marginTop:32, fontFamily:"'DM Sans', sans-serif", letterSpacing:"0.03em" }}>
-              ✦ সব প্ল্যানে <span style={{ color:"rgba(201,168,76,0.7)", fontWeight:600 }}>৭ দিনের ফ্রি ট্রায়াল</span> — কোনো ক্রেডিট কার্ড লাগবে না
+            <p style={{ textAlign:"center", color:"rgba(245,215,128,0.65)", fontSize:14, marginTop:32, fontFamily:"'DM Sans', sans-serif", letterSpacing:"0.03em" }}>
+              ✦ সব প্ল্যানে <span style={{ color:"#f5d780", fontWeight:700 }}>৭ দিনের ফ্রি ট্রায়াল</span> — কোনো ক্রেডিট কার্ড লাগবে না
             </p>
           </Reveal>
         </div>
@@ -404,35 +398,35 @@ export default function Index() {
           <Reveal>
             <div style={{
               borderRadius:28, padding:"72px 48px", textAlign:"center", position:"relative", overflow:"hidden",
-              border:"1px solid rgba(201,168,76,0.2)",
-              background:"linear-gradient(135deg, #111111 0%, #0f0e09 100%)",
-              boxShadow:"0 0 80px rgba(201,168,76,0.05)",
+              border:"1px solid rgba(201,168,76,0.3)",
+              background:"linear-gradient(135deg, #141414 0%, #100f08 100%)",
+              boxShadow:"0 0 80px rgba(201,168,76,0.07)",
             }}>
-              <div style={{ position:"absolute", top:0, left:0, right:0, height:1, background:gold, opacity:0.4 }} />
-              <div style={{ position:"absolute", bottom:0, left:0, right:0, height:1, background:gold, opacity:0.2 }} />
-              <div style={{ position:"absolute", top:"50%", left:"50%", transform:"translate(-50%,-50%)", width:600, height:300, borderRadius:"50%", background:"radial-gradient(ellipse, rgba(201,168,76,0.04) 0%, transparent 70%)" }} />
+              <div style={{ position:"absolute", top:0, left:0, right:0, height:1, background:gold, opacity:0.5 }} />
+              <div style={{ position:"absolute", bottom:0, left:0, right:0, height:1, background:gold, opacity:0.25 }} />
+              <div style={{ position:"absolute", top:"50%", left:"50%", transform:"translate(-50%,-50%)", width:600, height:300, borderRadius:"50%", background:"radial-gradient(ellipse, rgba(201,168,76,0.06) 0%, transparent 70%)" }} />
 
               <div style={{ position:"relative", zIndex:1 }}>
                 <div style={{ display:"flex", justifyContent:"center", gap:6, marginBottom:20 }}>
-                  {[...Array(5)].map((_,i) => <Star key={i} size={16} fill="#c9a84c" color="#c9a84c" />)}
+                  {[...Array(5)].map((_,i) => <Star key={i} size={18} fill="#f5d780" color="#f5d780" />)}
                 </div>
-                <div style={{ fontSize:10, letterSpacing:"0.4em", color:"rgba(201,168,76,0.4)", fontFamily:"monospace", textTransform:"uppercase", marginBottom:20 }}>✦ আজই শুরু করুন ✦</div>
-                <h2 style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:"clamp(32px,5vw,56px)", fontWeight:700, color:"#f0e6cc", marginBottom:16, lineHeight:1.2 }}>
+                <div style={{ fontSize:11, letterSpacing:"0.4em", color:"#f5d780", fontFamily:"monospace", textTransform:"uppercase", marginBottom:20, fontWeight:600 }}>✦ আজই শুরু করুন ✦</div>
+                <h2 style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:"clamp(32px,5vw,56px)", fontWeight:700, color:"#FFFFFF", marginBottom:16, lineHeight:1.2 }}>
                   আপনার রেস্টুরেন্টকে<br /><span style={goldText}>ডিজিটাল করুন!</span>
                 </h2>
-                <p style={{ color:"rgba(232,220,200,0.4)", fontSize:15, marginBottom:40, maxWidth:440, margin:"0 auto 40px", fontFamily:"'DM Sans', sans-serif", lineHeight:1.7 }}>
+                <p style={{ color:"rgba(255,255,255,0.7)", fontSize:16, marginBottom:40, maxWidth:440, margin:"0 auto 40px", fontFamily:"'DM Sans', sans-serif", lineHeight:1.7 }}>
                   ফ্রি ট্রায়ালে সব ফিচার ব্যবহার করুন। কোনো ঝামেলা নেই।
                 </p>
                 <a href="/login" style={{
                   display:"inline-flex", alignItems:"center", gap:10,
                   padding:"16px 48px", borderRadius:10, fontSize:15, fontWeight:700,
                   color:"#0a0a0a", textDecoration:"none", background: gold,
-                  boxShadow:"0 8px 40px rgba(201,168,76,0.3)",
+                  boxShadow:"0 8px 40px rgba(201,168,76,0.35)",
                   fontFamily:"'DM Sans', sans-serif", letterSpacing:"0.03em",
                   transition:"all 0.3s",
                 }}
-                  onMouseEnter={e => { e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.boxShadow="0 14px 50px rgba(201,168,76,0.45)"; }}
-                  onMouseLeave={e => { e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.boxShadow="0 8px 40px rgba(201,168,76,0.3)"; }}>
+                  onMouseEnter={e => { e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.boxShadow="0 14px 50px rgba(201,168,76,0.5)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.boxShadow="0 8px 40px rgba(201,168,76,0.35)"; }}>
                   ফ্রি ট্রায়াল শুরু করুন <ArrowRight size={16} />
                 </a>
               </div>
@@ -442,39 +436,39 @@ export default function Index() {
       </section>
 
       {/* ─── NCT BAR ─── */}
-      <div style={{ backgroundColor:"#060606", borderTop:"1px solid rgba(201,168,76,0.08)", padding:"14px 32px", display:"flex", alignItems:"center", justifyContent:"center", gap:16, flexWrap:"wrap" }}>
-        <span style={{ fontSize:9, letterSpacing:"0.35em", color:"rgba(255,255,255,0.15)", fontFamily:"monospace", textTransform:"uppercase" }}>A Product of</span>
+      <div style={{ backgroundColor:"#060606", borderTop:"1px solid rgba(201,168,76,0.12)", padding:"14px 32px", display:"flex", alignItems:"center", justifyContent:"center", gap:16, flexWrap:"wrap" }}>
+        <span style={{ fontSize:10, letterSpacing:"0.35em", color:"rgba(255,255,255,0.4)", fontFamily:"monospace", textTransform:"uppercase" }}>A Product of</span>
         <a href="https://nexcoreltd.com" target="_blank" rel="noopener noreferrer"
-          style={{ fontSize:9, letterSpacing:"0.35em", color:"rgba(201,168,76,0.35)", fontFamily:"monospace", textTransform:"uppercase", textDecoration:"none", transition:"color 0.2s" }}
-          onMouseEnter={e => e.currentTarget.style.color="rgba(201,168,76,0.8)"}
-          onMouseLeave={e => e.currentTarget.style.color="rgba(201,168,76,0.35)"}>
+          style={{ fontSize:10, letterSpacing:"0.35em", color:"rgba(201,168,76,0.65)", fontFamily:"monospace", textTransform:"uppercase", textDecoration:"none", transition:"color 0.2s" }}
+          onMouseEnter={e => e.currentTarget.style.color="#f5d780"}
+          onMouseLeave={e => e.currentTarget.style.color="rgba(201,168,76,0.65)"}>
           ⬡ NexCore Technologies Ltd.
         </a>
-        <span style={{ fontSize:9, letterSpacing:"0.35em", color:"rgba(255,255,255,0.15)", fontFamily:"monospace", textTransform:"uppercase" }}>· Bangladesh 🇧🇩</span>
+        <span style={{ fontSize:10, letterSpacing:"0.35em", color:"rgba(255,255,255,0.4)", fontFamily:"monospace", textTransform:"uppercase" }}>· Bangladesh 🇧🇩</span>
       </div>
 
       {/* ─── FOOTER ─── */}
-      <footer style={{ backgroundColor:"#080808", borderTop:"1px solid rgba(201,168,76,0.06)", padding:"52px 32px" }}>
+      <footer style={{ backgroundColor:"#080808", borderTop:"1px solid rgba(201,168,76,0.08)", padding:"52px 32px" }}>
         <div style={{ maxWidth:1100, margin:"0 auto", textAlign:"center" }}>
           <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:14, marginBottom:24 }}>
             <div style={{ width:38, height:38, borderRadius:10, background:gold, display:"flex", alignItems:"center", justifyContent:"center" }}>
               <UtensilsCrossed size={17} color="#0a0a0a" />
             </div>
             <div style={{ textAlign:"left" }}>
-              <div style={{ fontFamily:"'Cormorant Garamond', serif", fontWeight:700, fontSize:18, color:"#e8d98a" }}>Tasty QR Spot</div>
-              <div style={{ fontSize:8, letterSpacing:"0.25em", color:"rgba(201,168,76,0.3)", textTransform:"uppercase", fontFamily:"monospace" }}>by NexCore Technologies</div>
+              <div style={{ fontFamily:"'Cormorant Garamond', serif", fontWeight:700, fontSize:18, color:"#f5d780" }}>Tasty QR Spot</div>
+              <div style={{ fontSize:9, letterSpacing:"0.25em", color:"rgba(201,168,76,0.55)", textTransform:"uppercase", fontFamily:"monospace" }}>by NexCore Technologies</div>
             </div>
           </div>
           <div style={{ display:"flex", justifyContent:"center", gap:32, flexWrap:"wrap", marginBottom:24 }}>
             {[["ফিচার","#features"],["প্রাইসিং","#pricing"],["ডেমো","/menu/demo"],["লগইন","/login"]].map(([l,h]) => (
-              <a key={l} href={h} style={{ fontSize:13, color:"rgba(232,220,200,0.3)", textDecoration:"none", fontFamily:"'DM Sans', sans-serif", transition:"color 0.2s" }}
-                onMouseEnter={e => e.currentTarget.style.color="#c9a84c"}
-                onMouseLeave={e => e.currentTarget.style.color="rgba(232,220,200,0.3)"}>{l}</a>
+              <a key={l} href={h} style={{ fontSize:14, color:"rgba(255,255,255,0.55)", textDecoration:"none", fontFamily:"'DM Sans', sans-serif", transition:"color 0.2s" }}
+                onMouseEnter={e => e.currentTarget.style.color="#f5d780"}
+                onMouseLeave={e => e.currentTarget.style.color="rgba(255,255,255,0.55)"}>{l}</a>
             ))}
           </div>
-          <p style={{ fontSize:12, color:"rgba(232,220,200,0.2)", fontFamily:"'DM Sans', sans-serif" }}>
+          <p style={{ fontSize:13, color:"rgba(255,255,255,0.35)", fontFamily:"'DM Sans', sans-serif" }}>
             © 2025 Tasty QR Spot — একটি{" "}
-            <a href="https://nexcoreltd.com" target="_blank" rel="noopener noreferrer" style={{ color:"rgba(201,168,76,0.5)", textDecoration:"none" }}>NexCore Technologies Ltd.</a>{" "}
+            <a href="https://nexcoreltd.com" target="_blank" rel="noopener noreferrer" style={{ color:"rgba(201,168,76,0.65)", textDecoration:"none" }}>NexCore Technologies Ltd.</a>{" "}
             পণ্য · সকল অধিকার সংরক্ষিত
           </p>
         </div>
@@ -485,8 +479,8 @@ export default function Index() {
         * { margin:0; padding:0; box-sizing:border-box; }
         @keyframes floatUp {
           0%   { transform:translateY(0) rotate(0deg); opacity:0; }
-          8%   { opacity:0.04; }
-          92%  { opacity:0.04; }
+          8%   { opacity:0.07; }
+          92%  { opacity:0.07; }
           100% { transform:translateY(-110vh) rotate(360deg); opacity:0; }
         }
         @keyframes fadeUp {
@@ -498,12 +492,12 @@ export default function Index() {
           to   { opacity:1; transform:translateY(0); }
         }
         @keyframes pulse {
-          0%,100% { opacity:0.1; transform:scale(1); }
-          50%     { opacity:0.2; transform:scale(1.05); }
+          0%,100% { opacity:0.12; transform:scale(1); }
+          50%     { opacity:0.22; transform:scale(1.05); }
         }
         @keyframes glow {
-          0%,100% { box-shadow:0 0 8px rgba(201,168,76,0.8); }
-          50%     { box-shadow:0 0 16px rgba(201,168,76,1); }
+          0%,100% { box-shadow:0 0 8px rgba(201,168,76,0.9); }
+          50%     { box-shadow:0 0 18px rgba(201,168,76,1); }
         }
         html { scroll-behavior:smooth; }
       `}</style>
