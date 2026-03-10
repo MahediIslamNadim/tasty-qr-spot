@@ -236,6 +236,98 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Pricing Section */}
+      <section className="py-24 relative z-10 bg-secondary/20">
+        <div className="max-w-5xl mx-auto px-6">
+          <div className="text-center mb-16 animate-fade-up">
+            <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-4">
+              সাশ্রয়ী <span className="text-gradient-sunset">মূল্য পরিকল্পনা</span>
+            </h2>
+            <p className="text-muted-foreground max-w-lg mx-auto">আপনার রেস্টুরেন্টের আকার অনুযায়ী প্ল্যান বেছে নিন</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+            {[
+              {
+                name: "বেসিক",
+                price: "৪৯৯",
+                period: "/মাস",
+                desc: "ছোট রেস্টুরেন্টের জন্য পারফেক্ট",
+                features: ["৫০টি মেনু আইটেম", "৫টি টেবিল", "৩ জন স্টাফ", "QR কোড অর্ডারিং", "রিয়েলটাইম নোটিফিকেশন"],
+                highlight: false,
+                badge: null,
+                borderClass: "border-border",
+              },
+              {
+                name: "প্রিমিয়াম",
+                price: "৯৯৯",
+                period: "/মাস",
+                desc: "বড় রেস্টুরেন্টের জন্য সেরা চয়েস",
+                features: ["২০০টি মেনু আইটেম", "২০টি টেবিল", "১৫ জন স্টাফ", "সব বেসিক ফিচার", "অ্যানালিটিক্স ড্যাশবোর্ড", "প্রায়োরিটি সাপোর্ট"],
+                highlight: true,
+                badge: "জনপ্রিয়",
+                borderClass: "border-primary/50",
+              },
+              {
+                name: "এন্টারপ্রাইজ",
+                price: "১,৯৯৯",
+                period: "/মাস",
+                desc: "চেইন রেস্টুরেন্ট ও বড় প্রতিষ্ঠানের জন্য",
+                features: ["আনলিমিটেড মেনু আইটেম", "আনলিমিটেড টেবিল", "আনলিমিটেড স্টাফ", "সব প্রিমিয়াম ফিচার", "মাল্টি-ব্রাঞ্চ সাপোর্ট", "ডেডিকেটেড সাপোর্ট"],
+                highlight: false,
+                badge: null,
+                borderClass: "border-border",
+              },
+            ].map((plan, i) => (
+              <div
+                key={i}
+                className={`animate-fade-up relative bg-card rounded-2xl border-2 ${plan.borderClass} p-8 flex flex-col transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 ${plan.highlight ? "shadow-xl shadow-primary/15" : ""}`}
+                style={{ animationDelay: `${0.15 * i + 0.1}s`, opacity: 0, animationFillMode: "forwards" }}
+              >
+                {plan.badge && (
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full gradient-sunset text-white text-xs font-bold shadow-lg shadow-primary/30">
+                    🔥 {plan.badge}
+                  </div>
+                )}
+
+                <div className="text-center mb-6">
+                  <h3 className="font-display font-bold text-foreground text-xl mb-1">{plan.name}</h3>
+                  <p className="text-muted-foreground text-sm mb-4">{plan.desc}</p>
+                  <div className="flex items-baseline justify-center gap-1">
+                    <span className="text-sm text-muted-foreground">৳</span>
+                    <span className={`text-4xl font-display font-bold ${plan.highlight ? "text-gradient-sunset" : "text-foreground"}`}>{plan.price}</span>
+                    <span className="text-muted-foreground text-sm">{plan.period}</span>
+                  </div>
+                </div>
+
+                <div className="border-t border-border/50 pt-6 mb-8 flex-1">
+                  <ul className="space-y-3">
+                    {plan.features.map((f, fi) => (
+                      <li key={fi} className="flex items-center gap-2.5 text-sm text-muted-foreground">
+                        <span className="w-5 h-5 rounded-full bg-success/10 text-success flex items-center justify-center text-xs flex-shrink-0">✓</span>
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <Button
+                  variant={plan.highlight ? "hero" : "outline"}
+                  size="lg"
+                  asChild
+                  className={`w-full rounded-xl ${plan.highlight ? "shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30" : "hover:bg-accent/10"} transition-all duration-300`}
+                >
+                  <Link to="/login">শুরু করুন</Link>
+                </Button>
+              </div>
+            ))}
+          </div>
+
+          <p className="text-center text-muted-foreground text-sm mt-8 animate-fade-up" style={{ animationDelay: "0.6s", opacity: 0, animationFillMode: "forwards" }}>
+            সব প্ল্যানে ৭ দিনের ফ্রি ট্রায়াল অন্তর্ভুক্ত। কোনো ক্রেডিট কার্ড লাগবে না। 🎉
+          </p>
+        </div>
+
       {/* CTA Section */}
       <section className="py-20 relative z-10">
         <div className="max-w-3xl mx-auto px-6 text-center">
