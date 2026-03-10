@@ -142,6 +142,7 @@ const AdminTables = () => {
   });
 
   const menuUrl = (tableId: string) => `${window.location.origin}/menu/${restaurantId}?table=${tableId}`;
+  const seatUrl = (tableId: string, seatId: string) => `${window.location.origin}/menu/${restaurantId}?table=${tableId}&seat=${seatId}`;
 
   const getTableColor = (table: any) => {
     const orders = tableOrders[table.id];
