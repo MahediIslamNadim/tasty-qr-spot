@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/DashboardLayout";
 import StatCard from "@/components/StatCard";
-import { ShoppingCart, DollarSign, Users, TrendingUp, Clock, Crown, ArrowRight } from "lucide-react";
+import { ShoppingCart, DollarSign, Users, TrendingUp, Clock, Crown, ArrowRight, Banknote, Smartphone } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -21,14 +21,16 @@ const AdminDashboard = () => {
       const today = new Date().toISOString().split("T")[0];
 
       const [ordersRes, tablesRes] = await Promise.all([
-        supabase.from("orders").select("id, total, status, created_at").eq("restaurant_id", restaurantId),
+        supabase.from("orders").select("id, total, status, created_at, payment_status").eq("restaurant_id", restaurantId),
         supabase.from("restaurant_tables").select("id, status").eq("restaurant_id", restaurantId),
       ]);
 
       const orders = ordersRes.data || [];
       const tables = tablesRes.data || [];
       const todayOrders = orders.filter(o => o.created_at?.startsWith(today));
-      const todayRevenue = todayOrders.reduce((sum, o) => sum + Number(o.total || 0), 0);
+      const todayRevenue = todayOrders
+        .filter(o => o.payment_status === "paid")
+        .reduce((sum, o) => sum + Number(o.total || 0), 0);
       const activeTables = tables.filter(t => t.status === "occupied").length;
 
       return {
@@ -48,7 +50,7 @@ const AdminDashboard = () => {
       if (!restaurantId) return [];
       const { data } = await supabase
         .from("orders")
-        .select("id, total, status, created_at, table_id, restaurant_tables(name)")
+        .select("id, total, status, created_at, table_id, payment_status, payment_method, paid_to_staff_name, restaurant_tables(name)")
         .eq("restaurant_id", restaurantId)
         .order("created_at", { ascending: false })
         .limit(5);
@@ -87,13 +89,13 @@ const AdminDashboard = () => {
                     {restaurantPlan === "basic" ? "প্রিমিয়ামে আপগ্রেড করুন" : "এন্টারপ্রাইজে আপগ্রেড করুন"}
                   </h3>
                   <p className="text-sm text-muted-foreground mt-0.5">
-                    বর্তমান প্ল্যান: <span className="font-semibold text-foreground capitalize">{limits.label}</span> — 
+                    বর্তমান প্ল্যান: <span className="font-semibold text-foreground capitalize">{limits.label}</span> —
                     {restaurantPlan === "basic"
                       ? ` আনলিমিটেড মেনু, রিয়েলটাইম অর্ডার, অ্যাডভান্সড অ্যানালিটিক্স পান`
                       : ` মাল্টি-ব্রাঞ্চ সাপোর্ট, কাস্টম ব্র্যান্ডিং পান`}
                   </p>
                   <div className="flex gap-3 mt-2 text-xs text-muted-foreground">
-                    <span>মেনু: {stats?.todayOrders !== undefined ? "—" : ""} {formatLimit(limits.maxMenuItems)}</span>
+                    <span>মেনু: {formatLimit(limits.maxMenuItems)}</span>
                     <span>টেবিল: {formatLimit(limits.maxTables)}</span>
                     <span>কর্মী: {formatLimit(limits.maxStaff)}</span>
                   </div>
@@ -106,6 +108,7 @@ const AdminDashboard = () => {
           </Card>
         )}
 
+        {/* Recent Orders */}
         <Card>
           <CardHeader>
             <CardTitle className="font-display text-lg flex items-center gap-2">
@@ -128,19 +131,44 @@ const AdminDashboard = () => {
                       <p className="font-medium text-foreground">
                         #{order.id.slice(0, 6)} — {order.restaurant_tables?.name || "N/A"}
                       </p>
-                      <p className="text-sm text-muted-foreground">{timeAgo(order.created_at)}</p>
+                      <div className="flex items-center gap-2 flex-wrap mt-0.5">
+                        <p className="text-xs text-muted-foreground">{timeAgo(order.created_at)}</p>
+                        {/* ✅ কে বিল নিয়েছে — ছোট করে */}
+                        {order.paid_to_staff_name && (
+                          <span className="text-[10px] bg-secondary text-muted-foreground px-2 py-0.5 rounded-full flex items-center gap-1">
+                            💰 {order.paid_to_staff_name}
+                          </span>
+                        )}
+                        {/* ✅ Payment method */}
+                        {order.payment_method && (
+                          <span className="text-[10px] bg-success/10 text-success px-2 py-0.5 rounded-full flex items-center gap-1">
+                            {order.payment_method === "bkash"
+                              ? <><Smartphone className="w-2.5 h-2.5" /> bKash</>
+                              : <><Banknote className="w-2.5 h-2.5" /> Cash</>}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3">
                     <span className="font-semibold text-foreground">৳{order.total}</span>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      order.status === "pending" ? "bg-warning/10 text-warning" :
-                      order.status === "preparing" ? "bg-primary/10 text-primary" :
-                      order.status === "served" ? "bg-success/10 text-success" :
-                      "bg-muted text-muted-foreground"
-                    }`}>
-                      {order.status === "pending" ? "পেন্ডিং" : order.status === "preparing" ? "প্রস্তুত হচ্ছে" : order.status === "served" ? "সার্ভ করা হয়েছে" : "সম্পন্ন"}
-                    </span>
+                    {/* ✅ Payment status */}
+                    {order.payment_status === "paid" ? (
+                      <span className="px-3 py-1 rounded-full text-xs font-medium bg-success/10 text-success">
+                        ✅ পেইড
+                      </span>
+                    ) : (
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        order.status === "pending" ? "bg-warning/10 text-warning" :
+                        order.status === "preparing" ? "bg-primary/10 text-primary" :
+                        order.status === "served" ? "bg-success/10 text-success" :
+                        "bg-muted text-muted-foreground"
+                      }`}>
+                        {order.status === "pending" ? "পেন্ডিং" :
+                         order.status === "preparing" ? "প্রস্তুত হচ্ছে" :
+                         order.status === "served" ? "সার্ভ করা হয়েছে" : "সম্পন্ন"}
+                      </span>
+                    )}
                   </div>
                 </div>
               ))}
