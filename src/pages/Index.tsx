@@ -63,7 +63,7 @@ const Index = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background overflow-hidden">
+    <div className="min-h-screen overflow-hidden" style={{backgroundColor:"#ffffff"}}>
 
       {/* Floating emojis */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
@@ -78,8 +78,9 @@ const Index = () => {
 
       {/* NAVBAR */}
       <nav className={`sticky top-0 z-50 transition-all duration-500 ${
-        scrolled ? "bg-card/80 backdrop-blur-2xl border-b border-border/60 shadow-lg shadow-black/5"
-                 : "bg-transparent border-b border-transparent"}`}>
+        scrolled ? "backdrop-blur-2xl border-b border-gray-200 shadow-lg shadow-black/5"
+                 : "bg-transparent border-b border-transparent"}`}
+        style={scrolled ? {backgroundColor:"rgba(255,255,255,0.92)"} : {}}>
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl gradient-sunset flex items-center justify-center shadow-lg shadow-primary/40 relative">
@@ -193,7 +194,7 @@ const Index = () => {
       </section>
 
       {/* HOW IT WORKS */}
-      <section id="features" className="py-28 relative z-10">
+      <section id="features" className="py-28 relative z-10" style={{backgroundColor:"#ffffff"}}>
         <div className="max-w-5xl mx-auto px-6">
           <RevealDiv className="text-center mb-20">
             <p className="text-xs font-mono tracking-[4px] text-primary uppercase mb-3">// কিভাবে কাজ করে</p>
@@ -211,11 +212,11 @@ const Index = () => {
               {emoji:"⚡",title:"রিয়েলটাইম আপডেট",desc:"রান্নাঘর সাথে সাথে অর্ডার পায়। রিয়েলটাইমে স্ট্যাটাস ট্র্যাক করুন!",color:"from-emerald-500/20 to-teal-500/10",step:"০৩",delay:0.24},
             ].map((f,i) => (
               <RevealDiv key={i} delay={f.delay}
-                className="group relative bg-card rounded-3xl border border-border p-8 text-center hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 overflow-hidden">
+                className="group relative bg-white rounded-3xl border border-gray-200 p-8 text-center hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 overflow-hidden">
                 <div className={`absolute inset-0 bg-gradient-to-br ${f.color} opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl`} />
                 <div className="absolute top-5 right-5 w-9 h-9 rounded-full gradient-sunset text-white text-xs font-bold flex items-center justify-center shadow-lg font-mono">{f.step}</div>
                 <div className="relative z-10">
-                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-background to-secondary border border-border flex items-center justify-center mx-auto mb-6 group-hover:scale-110 group-hover:shadow-lg transition-all duration-400">
+                  <div className="w-20 h-20 rounded-2xl bg-gray-50 border border-gray-200 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 group-hover:shadow-lg transition-all duration-400">
                     <span className="text-4xl">{f.emoji}</span>
                   </div>
                   <h3 className="font-display font-bold text-foreground text-xl mb-3">{f.title}</h3>
@@ -228,7 +229,7 @@ const Index = () => {
       </section>
 
       {/* FEATURES GRID */}
-      <section className="py-24 relative z-10 bg-secondary/30">
+      <section className="py-24 relative z-10" style={{backgroundColor:"#f9f9f9"}}>
         <div className="max-w-5xl mx-auto px-6">
           <RevealDiv className="text-center mb-16">
             <p className="text-xs font-mono tracking-[4px] text-primary uppercase mb-3">// সুবিধাসমূহ</p>
@@ -246,7 +247,7 @@ const Index = () => {
               {emoji:"🏢",title:"মাল্টি-রেস্টুরেন্ট",desc:"একাধিক ব্রাঞ্চ একটি Super Admin account থেকে।",color:"text-rose-500 bg-rose-500/10"},
             ].map((f,i) => (
               <RevealDiv key={i} delay={i*0.07}
-                className="group bg-card rounded-2xl border border-border p-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-400 cursor-default">
+                className="group bg-white rounded-2xl border border-gray-200 p-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-400 cursor-default">
                 <div className={`w-12 h-12 rounded-xl ${f.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
                   <span className="text-2xl">{f.emoji}</span>
                 </div>
@@ -259,7 +260,7 @@ const Index = () => {
       </section>
 
       {/* PRICING */}
-      <section id="pricing" className="py-28 relative z-10">
+      <section id="pricing" className="py-28 relative z-10" style={{backgroundColor:"#ffffff"}}>
         <div className="max-w-5xl mx-auto px-6">
           <RevealDiv className="text-center mb-16">
             <p className="text-xs font-mono tracking-[4px] text-primary uppercase mb-3">// মূল্য পরিকল্পনা</p>
@@ -282,8 +283,8 @@ const Index = () => {
                highlight:false,badge:null,delay:0.2},
             ].map((plan,i) => (
               <RevealDiv key={i} delay={plan.delay}
-                className={`relative bg-card rounded-3xl border-2 p-8 flex flex-col transition-all duration-400 hover:-translate-y-2 hover:shadow-2xl
-                  ${plan.highlight ? "border-primary/60 shadow-xl shadow-primary/15 scale-[1.02]" : "border-border hover:border-primary/30"}`}>
+                className={`relative bg-white rounded-3xl border-2 p-8 flex flex-col transition-all duration-400 hover:-translate-y-2 hover:shadow-2xl
+                  ${plan.highlight ? "border-primary/60 shadow-xl shadow-primary/15 scale-[1.02]" : "border-gray-200 hover:border-primary/30"}`}>
                 {plan.badge && (
                   <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-5 py-1.5 rounded-full gradient-sunset text-white text-xs font-bold shadow-lg">{plan.badge}</div>
                 )}
@@ -297,7 +298,7 @@ const Index = () => {
                     <span className="text-muted-foreground text-sm">{plan.period}</span>
                   </div>
                 </div>
-                <div className="border-t border-border/50 pt-6 mb-8 flex-1 relative z-10">
+                <div className="border-t border-gray-100 pt-6 mb-8 flex-1 relative z-10">
                   <ul className="space-y-3">
                     {plan.features.map((f,fi) => (
                       <li key={fi} className="flex items-center gap-3 text-sm text-muted-foreground">
@@ -321,7 +322,7 @@ const Index = () => {
       </section>
 
       {/* CTA */}
-      <section className="py-24 relative z-10 overflow-hidden">
+      <section className="py-24 relative z-10 overflow-hidden" style={{backgroundColor:"#ffffff"}}>
         <div className="max-w-4xl mx-auto px-6">
           <RevealDiv>
             <div className="relative rounded-3xl overflow-hidden">
@@ -357,7 +358,7 @@ const Index = () => {
       </div>
 
       {/* FOOTER */}
-      <footer className="border-t border-border/40 py-12 relative z-10 bg-card/20 backdrop-blur-sm">
+      <footer className="border-t border-gray-100 py-12 relative z-10" style={{backgroundColor:"#ffffff"}}>
         <div className="max-w-6xl mx-auto px-6 text-center">
           <div className="flex items-center justify-center gap-3 mb-5">
             <div className="w-9 h-9 rounded-xl gradient-sunset flex items-center justify-center shadow-md">
