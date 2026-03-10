@@ -119,7 +119,6 @@ const CustomerMenu = () => {
         const { data: seatData } = await supabase.from("table_seats").select("seat_number").eq("id", seatId).single();
         if (seatData) {
           setSeatNumber(seatData.seat_number);
-          await supabase.from("table_seats").update({ status: "occupied" }).eq("id", seatId);
         }
       }
 
@@ -204,6 +203,10 @@ const CustomerMenu = () => {
 
       const { error: itemsErr } = await supabase.from("order_items").insert(items);
       if (itemsErr) throw itemsErr;
+
+      if (seatId) {
+        await supabase.from("table_seats").update({ status: "occupied" }).eq("id", seatId);
+      }
 
       toast.success("অর্ডার সফলভাবে পাঠানো হয়েছে!");
       setCart([]);
