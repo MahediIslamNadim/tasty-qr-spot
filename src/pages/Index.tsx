@@ -63,7 +63,7 @@ const Index = () => {
   }, []);
 
   return (
-    <div className="min-h-screen overflow-hidden" style={{backgroundColor:"#ffffff"}}>
+    <div className="min-h-screen overflow-hidden" style={{backgroundColor:"#1c1308"}}>
 
       {/* Floating emojis */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
