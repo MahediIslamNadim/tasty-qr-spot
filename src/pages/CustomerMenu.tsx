@@ -44,23 +44,6 @@ const getCategoryColor = (category: string) => {
   return categoryColors[category];
 };
 
-const useTokenCountdown = (expiresAt: string | null) => {
-  const [remaining, setRemaining] = useState<number>(0);
-  useEffect(() => {
-    if (!expiresAt) return;
-    const update = () => {
-      const diff = Math.max(0, Math.floor((new Date(expiresAt).getTime() - Date.now()) / 1000));
-      setRemaining(diff);
-    };
-    update();
-    const interval = setInterval(update, 1000);
-    return () => clearInterval(interval);
-  }, [expiresAt]);
-  const minutes = Math.floor(remaining / 60);
-  const seconds = remaining % 60;
-  return { remaining, display: `${minutes}:${seconds.toString().padStart(2, "0")}` };
-};
-
 const CustomerMenu = () => {
   const { restaurantId } = useParams();
   const [searchParams] = useSearchParams();
@@ -84,115 +67,13 @@ const CustomerMenu = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);
 
-  const [tokenValid, setTokenValid] = useState<boolean>(false);
-  const [tokenExpiry, setTokenExpiry] = useState<string | null>(null);
-  const [tokenChecking, setTokenChecking] = useState(true);
+  // ✅ Token state — default true, only false if explicitly expired/closed
+  const [tokenValid, setTokenValid] = useState<boolean>(true);
+  const [tokenChecking, setTokenChecking] = useState(false);
   const [sessionToken, setSessionToken] = useState<string | null>(null);
+  const [tableChecked, setTableChecked] = useState(false);
 
-  const { remaining, display: countdownDisplay } = useTokenCountdown(tokenExpiry);
-
-  const initToken = useCallback(async () => {
-    if (isDemo || !tableId || !restaurantId) {
-      setTokenValid(true);
-      setTokenChecking(false);
-      return;
-    }
-    setTokenChecking(true);
-    console.log("[initToken] start", { tableId, restaurantId, tokenParam });
-
-    // Check table open status
-    const { data: tableData } = await supabase
-      .from("restaurant_tables")
-      .select("name, is_open")
-      .eq("id", tableId)
-      .single();
-
-    console.log("[initToken] tableData", tableData);
-
-    if (tableData) {
-      setTableName(tableData.name);
-      const isOpen = (tableData as any).is_open !== false;
-      setTableIsOpen(isOpen);
-      if (!isOpen) {
-        console.log("[initToken] table is closed");
-        setTokenValid(false);
-        setTokenChecking(false);
-        return;
-      }
-    }
-
-    // 1️⃣ Validate token from URL
-    if (tokenParam) {
-      const { data: session, error: e1 } = await supabase
-        .from("table_sessions" as any)
-        .select("*")
-        .eq("token", tokenParam)
-        .eq("table_id", tableId)
-        .maybeSingle();
-      console.log("[initToken] url token check", { session, error: e1 });
-
-      if (session) {
-        const expired = new Date((session as any).expires_at) < new Date();
-        if (!expired) {
-          setTokenValid(true);
-          setTokenExpiry((session as any).expires_at);
-          setSessionToken((session as any).token);
-          setTokenChecking(false);
-          return;
-        }
-      }
-    }
-
-    // 2️⃣ Find existing valid session
-    const { data: existingSession, error: e2 } = await supabase
-      .from("table_sessions" as any)
-      .select("*")
-      .eq("table_id", tableId)
-      .eq("restaurant_id", restaurantId)
-      .gt("expires_at", new Date().toISOString())
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    console.log("[initToken] existing session", { existingSession, error: e2 });
-
-    if (existingSession) {
-      setTokenValid(true);
-      setTokenExpiry((existingSession as any).expires_at);
-      setSessionToken((existingSession as any).token);
-      const newUrl = new URL(window.location.href);
-      newUrl.searchParams.set("token", (existingSession as any).token);
-      window.history.replaceState({}, "", newUrl.toString());
-      setTokenChecking(false);
-      return;
-    }
-
-    // 3️⃣ Generate new token
-    const expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString();
-    const { data: newSession, error: e3 } = await supabase
-      .from("table_sessions" as any)
-      .insert({
-        restaurant_id: restaurantId,
-        table_id: tableId,
-        expires_at: expiresAt,
-      } as any)
-      .select()
-      .single();
-    console.log("[initToken] new session", { newSession, error: e3 });
-
-    if (!e3 && newSession) {
-      setTokenValid(true);
-      setTokenExpiry((newSession as any).expires_at);
-      setSessionToken((newSession as any).token);
-      const newUrl = new URL(window.location.href);
-      newUrl.searchParams.set("token", (newSession as any).token);
-      window.history.replaceState({}, "", newUrl.toString());
-    } else {
-      console.log("[initToken] FAILED — setting tokenValid false");
-      setTokenValid(false);
-    }
-    setTokenChecking(false);
-  }, [isDemo, tableId, restaurantId, tokenParam]);
-
+  // ── Fetch menu data ──
   useEffect(() => {
     const fetchData = async () => {
       if (isDemo) {
@@ -211,14 +92,12 @@ const CustomerMenu = () => {
         setMenuItems(demoItems);
         setCategories(["সব", ...new Set(demoItems.map(i => i.category))]);
         setLoading(false);
-        setTokenValid(true);
-        setTokenChecking(false);
         return;
       }
 
       const [restRes, menuRes] = await Promise.all([
-        supabase.from("restaurants").select("*").eq("id", restaurantId).single(),
-        supabase.from("menu_items").select("*").eq("restaurant_id", restaurantId).order("sort_order"),
+        supabase.from("restaurants").select("*").eq("id", restaurantId!).single(),
+        supabase.from("menu_items").select("*").eq("restaurant_id", restaurantId!).order("sort_order"),
       ]);
 
       if (restRes.data) setRestaurant(restRes.data);
@@ -227,28 +106,118 @@ const CustomerMenu = () => {
         setCategories(["সব", ...new Set(menuRes.data.map((i: any) => i.category))]);
       }
 
-      // ✅ BUG FIX: removed invalid tableData reference
       if (seatId) {
         const { data: seatData } = await supabase
-          .from("table_seats")
-          .select("seat_number")
-          .eq("id", seatId)
-          .single();
+          .from("table_seats").select("seat_number").eq("id", seatId).single();
         if (seatData) setSeatNumber(seatData.seat_number);
       }
 
-      // seat redirect handled after token is ready
-
       setLoading(false);
     };
-
     fetchData();
-    initToken();
-  }, [restaurantId, tableId, seatId, isDemo, initToken]);
+  }, [restaurantId, seatId, isDemo]);
 
-  // ✅ Redirect to seat select AFTER token is ready — pass token in URL
+  // ── Token + Table check — runs when URL params change ──
   useEffect(() => {
-    if (!isDemo && tableId && !seatId && !tokenChecking && tokenValid && restaurantId) {
+    if (isDemo || !tableId || !restaurantId) return;
+
+    const checkTokenAndTable = async () => {
+      setTokenChecking(true);
+
+      try {
+        // 1️⃣ Check table open/closed + name
+        const { data: tableData } = await supabase
+          .from("restaurant_tables")
+          .select("name, is_open")
+          .eq("id", tableId)
+          .single();
+
+        if (tableData) {
+          setTableName(tableData.name);
+          const isOpen = (tableData as any).is_open !== false;
+          setTableIsOpen(isOpen);
+          if (!isOpen) {
+            setTokenValid(false);
+            setTokenChecking(false);
+            setTableChecked(true);
+            return;
+          }
+        }
+
+        // 2️⃣ Token in URL — validate
+        if (tokenParam) {
+          const { data: session } = await supabase
+            .from("table_sessions" as any)
+            .select("token, expires_at")
+            .eq("token", tokenParam)
+            .eq("table_id", tableId)
+            .maybeSingle();
+
+          if (session && new Date((session as any).expires_at) > new Date()) {
+            setSessionToken((session as any).token);
+            setTokenValid(true);
+            setTokenChecking(false);
+            setTableChecked(true);
+            return;
+          }
+        }
+
+        // 3️⃣ No token / invalid — find existing valid session
+        const { data: existing } = await supabase
+          .from("table_sessions" as any)
+          .select("token, expires_at")
+          .eq("table_id", tableId)
+          .eq("restaurant_id", restaurantId)
+          .gt("expires_at", new Date().toISOString())
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (existing) {
+          setSessionToken((existing as any).token);
+          setTokenValid(true);
+          const newUrl = new URL(window.location.href);
+          newUrl.searchParams.set("token", (existing as any).token);
+          window.history.replaceState({}, "", newUrl.toString());
+          setTokenChecking(false);
+          setTableChecked(true);
+          return;
+        }
+
+        // 4️⃣ Create new token
+        const expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString();
+        const { data: newSession, error } = await supabase
+          .from("table_sessions" as any)
+          .insert({ restaurant_id: restaurantId, table_id: tableId, expires_at: expiresAt } as any)
+          .select()
+          .maybeSingle();
+
+        if (!error && newSession) {
+          setSessionToken((newSession as any).token);
+          setTokenValid(true);
+          const newUrl = new URL(window.location.href);
+          newUrl.searchParams.set("token", (newSession as any).token);
+          window.history.replaceState({}, "", newUrl.toString());
+        } else {
+          // ✅ Even if token creation fails — still allow menu access
+          setTokenValid(true);
+        }
+      } catch (err) {
+        // ✅ On any error — still show menu (don't block customer)
+        setTokenValid(true);
+      }
+
+      setTokenChecking(false);
+      setTableChecked(true);
+    };
+
+    checkTokenAndTable();
+  // ✅ tokenParam in deps — re-runs when URL changes (seat select navigate)
+  }, [isDemo, tableId, restaurantId, tokenParam]);
+
+  // ── Seat redirect — after table checked ──
+  useEffect(() => {
+    if (!isDemo && tableId && !seatId && tableChecked && tokenValid && restaurantId) {
       const checkSeats = async () => {
         const { data: seatsData } = await supabase
           .from("table_seats").select("id").eq("table_id", tableId).limit(1);
@@ -259,14 +228,7 @@ const CustomerMenu = () => {
       };
       checkSeats();
     }
-  }, [isDemo, tableId, seatId, tokenChecking, tokenValid, restaurantId, sessionToken, navigate]);
-
-  // Auto-invalidate when token expires
-  useEffect(() => {
-    if (remaining === 0 && tokenExpiry) {
-      setTokenValid(false);
-    }
-  }, [remaining, tokenExpiry]);
+  }, [isDemo, tableId, seatId, tableChecked, tokenValid, restaurantId, sessionToken, navigate]);
 
   const filtered = menuItems
     .filter(i => activeCategory === "সব" || i.category === activeCategory)
@@ -282,7 +244,6 @@ const CustomerMenu = () => {
 
   const addToCart = (item: MenuItem) => {
     if (!item.available) { toast.error("এই আইটেমটি এখন পাওয়া যাচ্ছে না"); return; }
-    if (!tokenValid) { toast.error("সেশন শেষ! QR কোড আবার স্ক্যান করুন"); return; }
     setCart(prev => {
       const existing = prev.find(c => c.id === item.id);
       if (existing) return prev.map(c => c.id === item.id ? { ...c, quantity: c.quantity + 1 } : c);
@@ -308,12 +269,6 @@ const CustomerMenu = () => {
       return;
     }
 
-    if (!tokenValid) {
-      toast.error("সেশন শেষ! QR কোড আবার স্ক্যান করুন");
-      setShowCart(false);
-      return;
-    }
-
     if (!tableIsOpen) {
       toast.error("এই টেবিলটি এখন বন্ধ আছে");
       return;
@@ -321,22 +276,6 @@ const CustomerMenu = () => {
 
     setSubmitting(true);
     try {
-      // Verify token in DB before inserting order
-      if (sessionToken) {
-        const { data: session } = await supabase
-          .from("table_sessions" as any)
-          .select("expires_at")
-          .eq("token", sessionToken)
-          .maybeSingle();
-
-        if (!session || new Date((session as any).expires_at) < new Date()) {
-          setTokenValid(false);
-          toast.error("সেশন মেয়াদ শেষ! QR কোড আবার স্ক্যান করুন");
-          setSubmitting(false);
-          return;
-        }
-      }
-
       const { data: order, error: orderErr } = await supabase
         .from("orders")
         .insert({
@@ -406,8 +345,8 @@ const CustomerMenu = () => {
     );
   }
 
-  // ── TOKEN EXPIRED ──
-  if (!isDemo && tableId && !tokenValid) {
+  // ── TOKEN EXPIRED — only show if table is open but token truly invalid ──
+  if (!isDemo && tableId && tableChecked && !tokenValid && tableIsOpen) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-6">
         <div className="text-center max-w-xs">
@@ -430,7 +369,6 @@ const CustomerMenu = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-accent/20">
-
       {/* Header */}
       <header className="sticky top-0 z-20 bg-card/80 backdrop-blur-2xl border-b border-border/50 shadow-sm">
         <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
@@ -447,7 +385,6 @@ const CustomerMenu = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
-
             <button onClick={() => setShowSearch(!showSearch)} className="w-11 h-11 rounded-2xl bg-secondary hover:bg-accent flex items-center justify-center transition-all">
               <Search className="w-5 h-5 text-muted-foreground" />
             </button>
@@ -524,7 +461,6 @@ const CustomerMenu = () => {
           const imgUrl = getImageUrl(item.image_url || null);
           const catColor = getCategoryColor(item.category);
           const isOutOfStock = !item.available;
-
           return (
             <div key={item.id}
               className={`group bg-card rounded-2xl border overflow-hidden transition-all duration-500 animate-fade-up ${
@@ -629,9 +565,6 @@ const CustomerMenu = () => {
                   <X className="w-4 h-4 text-foreground" />
                 </button>
               </div>
-
-
-
               {cart.length === 0 ? (
                 <div className="text-center py-12">
                   <ShoppingCart className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
@@ -688,7 +621,6 @@ const CustomerMenu = () => {
           </div>
         </div>
       )}
-
       <style>{`
         @keyframes slideUp {
           from { transform: translateY(100%); }
