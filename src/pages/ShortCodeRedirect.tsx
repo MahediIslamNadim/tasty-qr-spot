@@ -10,13 +10,16 @@ const ShortCodeRedirect = () => {
   useEffect(() => {
     const lookup = async () => {
       if (!shortCode) { setError(true); return; }
+
       const { data } = await (supabase
         .from("restaurants")
         .select("id") as any)
         .eq("short_code", shortCode)
         .single();
+
       if (data) {
-        navigate(`/menu/${data.id}`, { replace: true });
+        // ✅ table, seat, token params সহ forward করো
+        navigate(`/menu/${data.id}${window.location.search}`, { replace: true });
       } else {
         setError(true);
       }
@@ -38,7 +41,10 @@ const ShortCodeRedirect = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      <div className="flex flex-col items-center gap-3">
+        <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+        <p className="text-sm text-muted-foreground animate-pulse">মেনু লোড হচ্ছে...</p>
+      </div>
     </div>
   );
 };
