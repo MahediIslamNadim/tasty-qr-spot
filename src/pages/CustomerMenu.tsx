@@ -117,7 +117,7 @@ const CustomerMenu = () => {
       }
     }
 
-    // Validate existing token from URL
+    // 1️⃣ Validate token from URL
     if (tokenParam) {
       const { data: session } = await supabase
         .from("table_sessions" as any)
@@ -138,7 +138,30 @@ const CustomerMenu = () => {
       }
     }
 
-    // Generate new token
+    // ✅ 2️⃣ No token in URL (page refresh) — find existing valid session for this table
+    const { data: existingSession } = await supabase
+      .from("table_sessions" as any)
+      .select("*")
+      .eq("table_id", tableId)
+      .eq("restaurant_id", restaurantId)
+      .gt("expires_at", new Date().toISOString())
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .single();
+
+    if (existingSession) {
+      setTokenValid(true);
+      setTokenExpiry((existingSession as any).expires_at);
+      setSessionToken((existingSession as any).token);
+      // Restore token in URL silently
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.set("token", (existingSession as any).token);
+      window.history.replaceState({}, "", newUrl.toString());
+      setTokenChecking(false);
+      return;
+    }
+
+    // 3️⃣ No valid session — generate new token
     const expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString();
     const { data: newSession, error } = await supabase
       .from("table_sessions" as any)
