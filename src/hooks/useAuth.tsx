@@ -46,11 +46,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       } else if (waiterCheck.data === true) {
         bestRole = "waiter";
       }
-      console.log("Role checks - super:", superCheck.data, "admin:", adminCheck.data, "waiter:", waiterCheck.data, "Best:", bestRole);
       setRole(bestRole);
 
-      // Get restaurant
       let foundRestId: string | null = null;
+
+      // 1️⃣ RPC lookup
       try {
         const { data: restId } = await supabase
           .rpc("get_user_restaurant_id", { _user_id: userId });
@@ -60,6 +60,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
       } catch {}
 
+      // 2️⃣ owner_id lookup
       if (!foundRestId) {
         const { data: restaurants } = await supabase
           .from("restaurants")
@@ -72,7 +73,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
       }
 
-      // Check trial expiry and plan for admin users (not super_admin)
+      // ✅ 3️⃣ staff_restaurants lookup (waiter/admin assigned to restaurant)
+      if (!foundRestId) {
+        const { data: staffRow } = await supabase
+          .from("staff_restaurants" as any)
+          .select("restaurant_id")
+          .eq("user_id", userId)
+          .limit(1)
+          .single();
+        if (staffRow && (staffRow as any).restaurant_id) {
+          foundRestId = (staffRow as any).restaurant_id;
+          setRestaurantId((staffRow as any).restaurant_id);
+        }
+      }
+
+      // Check trial expiry and plan
       if (foundRestId) {
         const { data: restaurant } = await supabase
           .from("restaurants")
@@ -118,14 +133,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setTrialExpired(false);
     };
 
-    // Set up auth state listener FIRST (before getSession)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (!mounted) return;
-
         if (session?.user) {
           setUser(session.user);
-          // Fire and forget - don't await in callback
           fetchUserData(session.user.id).then(() => {
             if (mounted) setLoading(false);
           });
@@ -136,7 +148,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     );
 
-    // Then check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!mounted) return;
       if (session?.user) {
