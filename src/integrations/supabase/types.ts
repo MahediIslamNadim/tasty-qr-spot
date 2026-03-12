@@ -144,6 +144,11 @@ export type Database = {
           created_at: string
           id: string
           notes: string | null
+          paid_at: string | null
+          paid_to_staff_id: string | null
+          paid_to_staff_name: string | null
+          payment_method: string | null
+          payment_status: string | null
           restaurant_id: string
           seat_id: string | null
           status: string
@@ -155,6 +160,11 @@ export type Database = {
           created_at?: string
           id?: string
           notes?: string | null
+          paid_at?: string | null
+          paid_to_staff_id?: string | null
+          paid_to_staff_name?: string | null
+          payment_method?: string | null
+          payment_status?: string | null
           restaurant_id: string
           seat_id?: string | null
           status?: string
@@ -166,6 +176,11 @@ export type Database = {
           created_at?: string
           id?: string
           notes?: string | null
+          paid_at?: string | null
+          paid_to_staff_id?: string | null
+          paid_to_staff_name?: string | null
+          payment_method?: string | null
+          payment_status?: string | null
           restaurant_id?: string
           seat_id?: string | null
           status?: string
