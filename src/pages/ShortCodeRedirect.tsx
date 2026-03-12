@@ -10,9 +10,9 @@ const ShortCodeRedirect = () => {
   useEffect(() => {
     const lookup = async () => {
       if (!shortCode) { setError(true); return; }
-      const { data } = await supabase
+      const { data } = await (supabase
         .from("restaurants")
-        .select("id")
+        .select("id") as any)
         .eq("short_code", shortCode)
         .single();
       if (data) {
