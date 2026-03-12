@@ -124,7 +124,7 @@ const CustomerMenu = () => {
         .select("*")
         .eq("token", tokenParam)
         .eq("table_id", tableId)
-        .single();
+        .maybeSingle();
 
       if (session) {
         const expired = new Date((session as any).expires_at) < new Date();
@@ -147,7 +147,7 @@ const CustomerMenu = () => {
       .gt("expires_at", new Date().toISOString())
       .order("created_at", { ascending: false })
       .limit(1)
-      .single();
+      .maybeSingle();
 
     if (existingSession) {
       setTokenValid(true);
@@ -320,7 +320,7 @@ const CustomerMenu = () => {
           .from("table_sessions" as any)
           .select("expires_at")
           .eq("token", sessionToken)
-          .single();
+          .maybeSingle();
 
         if (!session || new Date((session as any).expires_at) < new Date()) {
           setTokenValid(false);
