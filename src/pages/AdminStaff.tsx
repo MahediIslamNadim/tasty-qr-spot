@@ -48,27 +48,39 @@ const AdminStaff = () => {
     queryKey: ["staff", restaurantId],
     queryFn: async () => {
       if (!restaurantId) return [];
+
+      // Get all staff linked to this restaurant
       const { data: staffLinks } = await supabase
         .from("staff_restaurants")
         .select("user_id")
         .eq("restaurant_id", restaurantId);
       if (!staffLinks || staffLinks.length === 0) return [];
+
       const userIds = staffLinks.map(s => s.user_id);
-      const { data: roles } = await supabase
-        .from("user_roles").select("user_id, role").in("user_id", userIds);
-      if (!roles) return [];
-      const { data: profiles } = await supabase
-        .from("profiles").select("id, full_name, email, phone").in("id", userIds);
-      return roles.map(r => {
-        const profile = profiles?.find(p => p.id === r.user_id);
+
+      // Get profiles and roles in parallel
+      const [rolesRes, profilesRes] = await Promise.all([
+        supabase.from("user_roles").select("user_id, role").in("user_id", userIds),
+        supabase.from("profiles").select("id, full_name, email, phone").in("id", userIds),
+      ]);
+
+      const roles = rolesRes.data || [];
+      const profiles = profilesRes.data || [];
+
+      // Merge — one entry per user
+      const result = userIds.map(uid => {
+        const roleRow = roles.find(r => r.user_id === uid);
+        const profile = profiles.find(p => p.id === uid);
         return {
-          id: r.user_id,
+          id: uid,
           name: profile?.full_name || "N/A",
           email: profile?.email || "N/A",
           phone: profile?.phone || "",
-          role: r.role,
+          role: roleRow?.role || "waiter",
         };
       }).filter(s => s.role === "waiter" || s.role === "admin");
+
+      return result;
     },
     enabled: !!restaurantId,
   });
