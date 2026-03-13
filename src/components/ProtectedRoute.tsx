@@ -7,7 +7,7 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
-  const { user, role, loading, trialExpired } = useAuth();
+  const { user, role, loading, trialExpired, restaurantId } = useAuth();
 
   if (loading) {
     return (
@@ -24,7 +24,12 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
     return <Navigate to="/login" replace />;
   }
 
-  // If trial expired, redirect admin users to trial-expired page
+  // ✅ Admin has no restaurant → force setup
+  if (role === "admin" && !restaurantId) {
+    return <Navigate to="/admin-setup" replace />;
+  }
+
+  // Trial expired
   if (trialExpired && role === "admin") {
     return <Navigate to="/trial-expired" replace />;
   }
