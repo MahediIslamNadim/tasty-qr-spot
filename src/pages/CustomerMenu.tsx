@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, Plus, Minus, UtensilsCrossed, X, Send, Image as ImageIcon, Flame, CheckCircle, XCircle, Package, Search, QrCode, Lock } from "lucide-react";
+import { ShoppingCart, Plus, Minus, UtensilsCrossed, X, Send, Image as ImageIcon, Flame, CheckCircle, XCircle, Package, Search, QrCode, Lock, ClipboardList, ChefHat, Bell, Bike } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -66,6 +66,8 @@ const CustomerMenu = () => {
   const [submitting, setSubmitting] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);
+  const [myOrders, setMyOrders] = useState<any[]>([]);
+  const [showOrderStatus, setShowOrderStatus] = useState(false);
 
   // ✅ Token state — default true, only false if explicitly expired/closed
   const [tokenValid, setTokenValid] = useState<boolean>(true);
@@ -306,14 +308,44 @@ const CustomerMenu = () => {
       }
 
       toast.success("অর্ডার সফলভাবে পাঠানো হয়েছে! 🎉");
+      setMyOrders(prev => [...prev, { ...order, items: cart, status: "pending" }]);
       setCart([]);
       setShowCart(false);
+      setShowOrderStatus(true);
     } catch (err: any) {
       toast.error(err.message || "অর্ডার পাঠাতে সমস্যা হয়েছে");
     } finally {
       setSubmitting(false);
     }
   };
+
+  // ── Realtime order status subscription ──
+  useEffect(() => {
+    if (!tableId || !restaurantId || isDemo) return;
+    const channel = supabase
+      .channel(`orders-${tableId}`)
+      .on("postgres_changes", {
+        event: "UPDATE",
+        schema: "public",
+        table: "orders",
+        filter: `table_id=eq.${tableId}`,
+      }, (payload) => {
+        const updated = payload.new as any;
+        setMyOrders(prev => prev.map(o => o.id === updated.id ? { ...o, status: updated.status } : o));
+        const statusMessages: Record<string, string> = {
+          confirmed: "✅ রান্নাঘর অর্ডার accept করেছে!",
+          preparing: "🍳 আপনার খাবার রান্না হচ্ছে...",
+          ready: "🛎️ খাবার ready! ওয়েটার আসছে।",
+          delivered: "🎉 খাবার পৌঁছে গেছে! ধন্যবাদ।",
+          cancelled: "❌ দুঃখিত, অর্ডারটি বাতিল হয়েছে।",
+        };
+        if (statusMessages[updated.status]) {
+          toast(statusMessages[updated.status], { duration: 5000 });
+        }
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [tableId, restaurantId, isDemo]);
 
   // ── LOADING ──
   if (loading || tokenChecking) {
@@ -388,6 +420,16 @@ const CustomerMenu = () => {
             <button onClick={() => setShowSearch(!showSearch)} className="w-11 h-11 rounded-2xl bg-secondary hover:bg-accent flex items-center justify-center transition-all">
               <Search className="w-5 h-5 text-muted-foreground" />
             </button>
+            {myOrders.length > 0 && (
+              <button onClick={() => setShowOrderStatus(true)} className="relative w-11 h-11 rounded-2xl bg-warning/10 hover:bg-warning/20 flex items-center justify-center transition-all">
+                <ClipboardList className="w-5 h-5 text-warning" />
+                {myOrders.filter(o => !["delivered","cancelled"].includes(o.status)).length > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-warning text-warning-foreground text-[10px] flex items-center justify-center font-bold animate-pulse">
+                    {myOrders.filter(o => !["delivered","cancelled"].includes(o.status)).length}
+                  </span>
+                )}
+              </button>
+            )}
             <button onClick={() => setShowCart(true)} className="relative w-11 h-11 rounded-2xl bg-primary/10 hover:bg-primary/20 flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95">
               <ShoppingCart className="w-5 h-5 text-primary" />
               {totalItems > 0 && (
@@ -543,6 +585,92 @@ const CustomerMenu = () => {
             </div>
             <span className="font-bold text-xl">৳{totalPrice}</span>
           </button>
+        </div>
+      )}
+
+      {/* Order Status Drawer */}
+      {showOrderStatus && (
+        <div className="fixed inset-0 z-50 bg-foreground/60 backdrop-blur-md" onClick={() => setShowOrderStatus(false)}>
+          <div className="absolute bottom-0 left-0 right-0 bg-card rounded-t-3xl max-h-[85vh] overflow-y-auto"
+            onClick={e => e.stopPropagation()}
+            style={{ animation: "slideUp 0.35s cubic-bezier(0.32, 0.72, 0, 1)" }}>
+            <div className="flex justify-center pt-3 pb-1">
+              <div className="w-10 h-1 rounded-full bg-border" />
+            </div>
+            <div className="p-6 pt-3">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="font-display font-bold text-xl text-foreground">অর্ডার স্ট্যাটাস</h2>
+                  <p className="text-sm text-muted-foreground">রিয়েলটাইম আপডেট</p>
+                </div>
+                <button onClick={() => setShowOrderStatus(false)} className="w-9 h-9 rounded-xl bg-secondary hover:bg-accent flex items-center justify-center transition-colors">
+                  <X className="w-4 h-4 text-foreground" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                {myOrders.map((order, oi) => {
+                  const steps = [
+                    { key: "pending",   icon: ClipboardList, label: "অর্ডার দেওয়া হয়েছে", color: "text-muted-foreground", bg: "bg-muted/30" },
+                    { key: "confirmed", icon: CheckCircle,   label: "রান্নাঘর accept করেছে", color: "text-info",    bg: "bg-info/10" },
+                    { key: "preparing", icon: ChefHat,       label: "রান্না হচ্ছে",          color: "text-warning", bg: "bg-warning/10" },
+                    { key: "ready",     icon: Bell,          label: "আসছে!",                 color: "text-success", bg: "bg-success/10" },
+                    { key: "delivered", icon: Bike,          label: "পৌঁছে গেছে",            color: "text-primary", bg: "bg-primary/10" },
+                  ];
+                  const currentIdx = steps.findIndex(s => s.key === order.status);
+                  const isCancelled = order.status === "cancelled";
+
+                  return (
+                    <div key={order.id} className="bg-secondary/30 rounded-2xl p-4 border border-border/50">
+                      <div className="flex items-center justify-between mb-4">
+                        <p className="font-semibold text-sm text-foreground">অর্ডার #{oi + 1}</p>
+                        <span className="text-xs text-muted-foreground">৳{order.total}</span>
+                      </div>
+
+                      {isCancelled ? (
+                        <div className="flex items-center gap-3 p-3 rounded-xl bg-destructive/10 border border-destructive/20">
+                          <XCircle className="w-5 h-5 text-destructive flex-shrink-0" />
+                          <p className="text-sm font-semibold text-destructive">অর্ডারটি বাতিল হয়েছে</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          {steps.map((step, si) => {
+                            const Icon = step.icon;
+                            const isDone = si <= currentIdx;
+                            const isActive = si === currentIdx;
+                            return (
+                              <div key={step.key} className={`flex items-center gap-3 p-2.5 rounded-xl transition-all ${isActive ? `${step.bg} border border-current/20` : isDone ? "opacity-60" : "opacity-25"}`}>
+                                <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 ${isActive ? step.bg : "bg-muted/20"}`}>
+                                  <Icon className={`w-4 h-4 ${isActive ? step.color : isDone ? "text-muted-foreground" : "text-muted-foreground/40"}`} />
+                                </div>
+                                <div className="flex-1">
+                                  <p className={`text-sm font-semibold ${isActive ? step.color : isDone ? "text-foreground" : "text-muted-foreground/40"}`}>{step.label}</p>
+                                </div>
+                                {isDone && !isActive && <CheckCircle className="w-4 h-4 text-success" />}
+                                {isActive && <div className="w-2 h-2 rounded-full bg-current animate-pulse" style={{ color: "inherit" }} />}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      {/* Order items summary */}
+                      <div className="mt-3 pt-3 border-t border-border/30">
+                        <p className="text-xs text-muted-foreground mb-1.5">আইটেম:</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {(order.items || []).map((item: any) => (
+                            <span key={item.id} className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
+                              {item.name} ×{item.quantity}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
