@@ -4,9 +4,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import {
-  Eye, EyeOff, UtensilsCrossed, ArrowRight,
-  QrCode, Zap, ShieldCheck, KeyRound, ArrowLeft
+  Eye, EyeOff, ArrowRight,
+  QrCode, Zap, ShieldCheck, ChevronDown, KeyRound, ArrowLeft
 } from "lucide-react";
+
+const PLANS = [
+  { id: "basic", label: "বেসিক", price: "৩৯৯", trial: true, desc: "৭ দিন ফ্রি ট্রায়াল", features: ["৫০টি মেনু আইটেম", "৫টি টেবিল", "৩ জন স্টাফ"] },
+  { id: "premium", label: "প্রিমিয়াম", price: "৬৯৯", trial: false, desc: "পেমেন্ট প্রয়োজন", features: ["২০০টি মেনু আইটেম", "২০টি টেবিল", "১৫ জন স্টাফ"] },
+  { id: "enterprise", label: "এন্টারপ্রাইজ", price: "১,১৯৯", trial: false, desc: "পেমেন্ট প্রয়োজন", features: ["আনলিমিটেড সব", "মাল্টি-ব্রাঞ্চ", "ডেডিকেটেড সাপোর্ট"] },
+];
 
 type Mode = "login" | "signup" | "forgot" | "forgot_sent";
 
@@ -15,14 +21,16 @@ const Login = () => {
   const { user, role, loading } = useAuth();
 
   const [mode, setMode] = useState<Mode>("login");
-  const [email, setEmail] = useState("shadin@gmail.com");
-  const [password, setPassword] = useState("shadin123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [restaurantName, setRestaurantName] = useState("");
   const [restaurantAddress, setRestaurantAddress] = useState("");
   const [restaurantPhone, setRestaurantPhone] = useState("");
+  const [selectedPlan, setSelectedPlan] = useState("basic");
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [planOpen, setPlanOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && user && role) {
@@ -62,9 +70,10 @@ const Login = () => {
         });
         if (error) throw error;
         if (data.user) {
-          // Always basic plan with 7-day trial
+          const isBasicPlan = selectedPlan === "basic";
           const trialEndsAt = new Date();
-          trialEndsAt.setDate(trialEndsAt.getDate() + 7);
+          if (isBasicPlan) trialEndsAt.setDate(trialEndsAt.getDate() + 7);
+          else trialEndsAt.setDate(trialEndsAt.getDate() - 1);
 
           const { data: restaurant, error: restError } = await supabase
             .from("restaurants")
@@ -72,7 +81,7 @@ const Login = () => {
               name: restaurantName.trim(),
               address: restaurantAddress.trim() || null,
               phone: restaurantPhone.trim() || null,
-              plan: "basic",
+              plan: selectedPlan,
               owner_id: data.user.id,
               status: "active",
               trial_ends_at: trialEndsAt.toISOString(),
@@ -102,8 +111,8 @@ const Login = () => {
               { restaurant_id: restaurant.id, name: "T-6", seats: 4 },
             ]);
           }
-
-          toast.success("অ্যাকাউন্ট তৈরি হয়েছে! ৭ দিনের ফ্রি ট্রায়াল শুরু হয়েছে।");
+          if (isBasicPlan) toast.success("অ্যাকাউন্ট তৈরি হয়েছে! ৭ দিনের ফ্রি ট্রায়াল শুরু হয়েছে।");
+          else toast.info("অ্যাকাউন্ট তৈরি হয়েছে! প্যাকেজ সক্রিয় করতে পেমেন্ট করুন।");
         }
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
@@ -119,6 +128,7 @@ const Login = () => {
 
   const gold = "linear-gradient(135deg, #f5d780, #c9a84c, #e8c04a)";
   const goldText: React.CSSProperties = { background: gold, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" };
+  const currentPlan = PLANS.find(p => p.id === selectedPlan)!;
 
   const inputStyle: React.CSSProperties = {
     width: "100%", height: 48,
@@ -144,6 +154,24 @@ const Login = () => {
     { icon: ShieldCheck, title: "নিরাপদ", desc: "সম্পূর্ণ সুরক্ষিত ডেটা ম্যানেজমেন্ট" },
   ];
 
+  // ── Logo component (reused) ──
+  const Logo = ({ size = "md" }: { size?: "sm" | "md" }) => (
+    <div style={{ display: "flex", alignItems: "center", gap: size === "sm" ? 10 : 14 }}>
+      <div style={{
+        width: size === "sm" ? 40 : 48, height: size === "sm" ? 40 : 48,
+        borderRadius: size === "sm" ? 11 : 14,
+        background: gold, display: "flex", alignItems: "center", justifyContent: "center",
+        boxShadow: "0 0 24px rgba(201,168,76,0.35)",
+        fontSize: size === "sm" ? 18 : 22, fontWeight: 800, color: "#0a0a0a",
+        fontFamily: "'DM Sans', sans-serif", letterSpacing: "-0.02em",
+      }}>QR</div>
+      <div>
+        <div style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 700, fontSize: size === "sm" ? 17 : 20, color: "#FFFFFF" }}>QRManager</div>
+        <div style={{ fontSize: 9, letterSpacing: "0.3em", color: "rgba(201,168,76,0.6)", textTransform: "uppercase", fontFamily: "monospace" }}>by NexCore Technologies</div>
+      </div>
+    </div>
+  );
+
   return (
     <div style={{ fontFamily: "'DM Sans', sans-serif", minHeight: "100vh", display: "flex", backgroundColor: "#0a0a0a" }}>
 
@@ -159,15 +187,7 @@ const Login = () => {
           <div style={{ position: "absolute", bottom: "-10%", left: "-5%", width: 400, height: 400, borderRadius: "50%", background: "radial-gradient(circle, rgba(201,168,76,0.04) 0%, transparent 65%)" }} />
           <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(201,168,76,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(201,168,76,0.04) 1px, transparent 1px)", backgroundSize: "60px 60px" }} />
         </div>
-        <div style={{ position: "relative", zIndex: 1, display: "flex", alignItems: "center", gap: 14 }}>
-          <div style={{ width: 48, height: 48, borderRadius: 14, background: gold, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 24px rgba(201,168,76,0.35)" }}>
-            <UtensilsCrossed size={22} color="#0a0a0a" />
-          </div>
-          <div>
-            <div style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 700, fontSize: 20, color: "#FFFFFF" }}>QRManager</div>
-            <div style={{ fontSize: 9, letterSpacing: "0.3em", color: "rgba(201,168,76,0.6)", textTransform: "uppercase", fontFamily: "monospace" }}>by NexCore Technologies</div>
-          </div>
-        </div>
+        <div style={{ position: "relative", zIndex: 1 }}><Logo /></div>
         <div style={{ position: "relative", zIndex: 1 }}>
           <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 18px", borderRadius: 100, border: "1px solid rgba(201,168,76,0.3)", background: "rgba(201,168,76,0.08)", fontSize: 11, fontWeight: 600, color: "#f5d780", letterSpacing: "0.08em", marginBottom: 28 }}>
             <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#f5d780", boxShadow: "0 0 8px rgba(245,215,128,0.9)" }} />
@@ -193,29 +213,21 @@ const Login = () => {
             ))}
           </div>
         </div>
-        <div style={{ position: "relative", zIndex: 1 }}>
-          <p style={{ fontSize: 11, color: "rgba(255,255,255,0.2)", letterSpacing: "0.03em" }}>
-            © {new Date().getFullYear()} QRManager · একটি <span style={{ color: "rgba(201,168,76,0.45)" }}>NexCore Technologies Ltd.</span> পণ্য
-          </p>
-        </div>
+        <p style={{ position: "relative", zIndex: 1, fontSize: 11, color: "rgba(255,255,255,0.2)" }}>
+          © {new Date().getFullYear()} QRManager · একটি <span style={{ color: "rgba(201,168,76,0.45)" }}>NexCore Technologies Ltd.</span> পণ্য
+        </p>
       </div>
 
-      {/* ── RIGHT PANEL (FORM) ── */}
+      {/* ── RIGHT PANEL ── */}
       <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 24px", overflowY: "auto", background: "#0a0a0a" }}>
         <div style={{ width: "100%", maxWidth: 440 }}>
 
           {/* Mobile logo */}
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 36, justifyContent: "center" }} className="lg-hide">
-            <div style={{ width: 44, height: 44, borderRadius: 12, background: gold, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 20px rgba(201,168,76,0.3)" }}>
-              <UtensilsCrossed size={20} color="#0a0a0a" />
-            </div>
-            <div>
-              <div style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 700, fontSize: 18, color: "#FFFFFF" }}>QRManager</div>
-              <div style={{ fontSize: 9, letterSpacing: "0.28em", color: "rgba(201,168,76,0.55)", textTransform: "uppercase", fontFamily: "monospace" }}>by NexCore Technologies</div>
-            </div>
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 36 }} className="lg-hide">
+            <Logo size="sm" />
           </div>
 
-          {/* FORGOT PASSWORD — Email sent screen */}
+          {/* ── FORGOT SENT ── */}
           {mode === "forgot_sent" ? (
             <div style={{ textAlign: "center" }}>
               <div style={{ width: 72, height: 72, borderRadius: 20, background: "rgba(201,168,76,0.12)", border: "1px solid rgba(201,168,76,0.3)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 24px" }}>
@@ -223,7 +235,7 @@ const Login = () => {
               </div>
               <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 32, fontWeight: 700, color: "#FFFFFF", marginBottom: 12 }}>ইমেইল পাঠানো হয়েছে!</h2>
               <p style={{ fontSize: 14, color: "rgba(255,255,255,0.5)", lineHeight: 1.8, marginBottom: 8 }}>
-                <span style={{ color: "#f5d780", fontWeight: 600 }}>{email}</span> এই ইমেইলে পাসওয়ার্ড রিসেট লিংক পাঠানো হয়েছে।
+                <span style={{ color: "#f5d780", fontWeight: 600 }}>{email}</span> এ পাসওয়ার্ড রিসেট লিংক পাঠানো হয়েছে।
               </p>
               <p style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", marginBottom: 32 }}>Spam/Junk folder চেক করুন যদি না পান।</p>
               <button onClick={() => { setMode("login"); setEmail(""); }}
@@ -232,6 +244,7 @@ const Login = () => {
               </button>
             </div>
 
+          /* ── FORGOT FORM ── */
           ) : mode === "forgot" ? (
             <div>
               <button onClick={() => setMode("login")}
@@ -240,7 +253,6 @@ const Login = () => {
                 onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,0.4)"}>
                 <ArrowLeft size={15} /> লগইনে ফিরে যান
               </button>
-
               <div style={{ marginBottom: 32 }}>
                 <div style={{ width: 56, height: 56, borderRadius: 16, background: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.25)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
                   <KeyRound size={24} color="#f5d780" />
@@ -248,42 +260,25 @@ const Login = () => {
                 <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 34, fontWeight: 700, color: "#FFFFFF", marginBottom: 8 }}>পাসওয়ার্ড ভুলে গেছেন?</h2>
                 <p style={{ fontSize: 14, color: "rgba(255,255,255,0.45)", lineHeight: 1.7 }}>আপনার ইমেইল দিন — পাসওয়ার্ড রিসেট লিংক পাঠানো হবে।</p>
               </div>
-
               <form onSubmit={handleForgotPassword}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
                   <div>
                     <label style={labelStyle}>ইমেইল</label>
-                    <input
-                      type="email" placeholder="your@email.com"
-                      value={email} onChange={e => setEmail(e.target.value)}
-                      style={inputStyle} required
+                    <input type="email" placeholder="your@email.com" value={email} onChange={e => setEmail(e.target.value)} style={inputStyle} required
                       onFocus={e => { e.target.style.borderColor = "rgba(201,168,76,0.6)"; e.target.style.backgroundColor = "rgba(255,255,255,0.06)"; }}
-                      onBlur={e => { e.target.style.borderColor = "rgba(201,168,76,0.2)"; e.target.style.backgroundColor = "rgba(255,255,255,0.04)"; }}
-                    />
+                      onBlur={e => { e.target.style.borderColor = "rgba(201,168,76,0.2)"; e.target.style.backgroundColor = "rgba(255,255,255,0.04)"; }} />
                   </div>
                   <button type="submit" disabled={submitting}
-                    style={{
-                      width: "100%", height: 52, borderRadius: 12,
-                      background: submitting ? "rgba(201,168,76,0.4)" : gold,
-                      border: "none", cursor: submitting ? "not-allowed" : "pointer",
-                      fontSize: 15, fontWeight: 700, color: "#0a0a0a",
-                      display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-                      fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.03em",
-                      boxShadow: submitting ? "none" : "0 8px 32px rgba(201,168,76,0.3)",
-                      transition: "all 0.25s",
-                    }}
+                    style={{ width: "100%", height: 52, borderRadius: 12, background: submitting ? "rgba(201,168,76,0.4)" : gold, border: "none", cursor: submitting ? "not-allowed" : "pointer", fontSize: 15, fontWeight: 700, color: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontFamily: "'DM Sans', sans-serif", boxShadow: "0 8px 32px rgba(201,168,76,0.3)", transition: "all 0.25s" }}
                     onMouseEnter={e => { if (!submitting) { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 12px 40px rgba(201,168,76,0.45)"; } }}
                     onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 8px 32px rgba(201,168,76,0.3)"; }}>
-                    {submitting ? (
-                      <><span style={{ width: 16, height: 16, border: "2px solid rgba(10,10,10,0.3)", borderTopColor: "#0a0a0a", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} /> অপেক্ষা করুন...</>
-                    ) : (
-                      <> রিসেট লিংক পাঠান <ArrowRight size={16} /></>
-                    )}
+                    {submitting ? <><span style={{ width: 16, height: 16, border: "2px solid rgba(10,10,10,0.3)", borderTopColor: "#0a0a0a", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} /> অপেক্ষা করুন...</> : <>রিসেট লিংক পাঠান <ArrowRight size={16} /></>}
                   </button>
                 </div>
               </form>
             </div>
 
+          /* ── LOGIN / SIGNUP ── */
           ) : (
             <>
               <div style={{ marginBottom: 32 }}>
@@ -291,7 +286,7 @@ const Login = () => {
                   {mode === "signup" ? "শুরু করুন" : "স্বাগতম 👋"}
                 </h2>
                 <p style={{ fontSize: 14, color: "rgba(255,255,255,0.45)" }}>
-                  {mode === "signup" ? "নতুন অ্যাকাউন্ট তৈরি করুন • ৭ দিন ফ্রি ট্রায়াল (Basic)" : "আপনার ড্যাশবোর্ডে লগইন করুন"}
+                  {mode === "signup" ? "QRManager এ নতুন অ্যাকাউন্ট তৈরি করুন • ৭ দিন ফ্রি ট্রায়াল" : "QRManager ড্যাশবোর্ডে লগইন করুন"}
                 </p>
               </div>
 
@@ -325,10 +320,42 @@ const Login = () => {
                             onBlur={e => { e.target.style.borderColor = "rgba(201,168,76,0.2)"; e.target.style.backgroundColor = "rgba(255,255,255,0.04)"; }} />
                         </div>
                       </div>
-                      {/* Auto-assigned plan info */}
-                      <div style={{ padding: "12px 16px", borderRadius: 12, background: "rgba(201,168,76,0.08)", border: "1px solid rgba(201,168,76,0.2)" }}>
-                        <p style={{ fontSize: 13, color: "#f5d780", fontWeight: 600, marginBottom: 4 }}>✦ Basic প্ল্যান — ৭ দিন ফ্রি ট্রায়াল</p>
-                        <p style={{ fontSize: 11, color: "rgba(255,255,255,0.45)" }}>কোনো ক্রেডিট কার্ড লাগবে না। ট্রায়াল শেষে প্ল্যান কিনতে পারবেন।</p>
+                      {/* Plan selector */}
+                      <div>
+                        <label style={labelStyle}>প্যাকেজ নির্বাচন</label>
+                        <div style={{ position: "relative" }}>
+                          <button type="button" onClick={() => setPlanOpen(!planOpen)}
+                            style={{ ...inputStyle, display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer", height: 52, border: planOpen ? "1px solid rgba(201,168,76,0.6)" : "1px solid rgba(201,168,76,0.2)" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                              <span style={{ fontWeight: 600, color: "#FFFFFF" }}>{currentPlan.label}</span>
+                              <span style={{ color: "#f5d780", fontWeight: 700 }}>৳{currentPlan.price}/মাস</span>
+                              {currentPlan.trial && <span style={{ fontSize: 10, padding: "2px 8px", borderRadius: 20, background: "rgba(201,168,76,0.15)", color: "#f5d780", fontWeight: 600 }}>৭ দিন ফ্রি</span>}
+                            </div>
+                            <ChevronDown size={16} color="rgba(255,255,255,0.4)" style={{ transform: planOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }} />
+                          </button>
+                          {planOpen && (
+                            <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, zIndex: 50, background: "#141414", border: "1px solid rgba(201,168,76,0.25)", borderRadius: 14, overflow: "hidden", boxShadow: "0 16px 48px rgba(0,0,0,0.6)" }}>
+                              {PLANS.map((plan, i) => (
+                                <button key={plan.id} type="button" onClick={() => { setSelectedPlan(plan.id); setPlanOpen(false); }}
+                                  style={{ width: "100%", padding: "14px 18px", display: "flex", alignItems: "center", justifyContent: "space-between", background: selectedPlan === plan.id ? "rgba(201,168,76,0.1)" : "transparent", border: "none", borderTop: i > 0 ? "1px solid rgba(255,255,255,0.05)" : "none", cursor: "pointer", transition: "background 0.15s" }}
+                                  onMouseEnter={e => { if (selectedPlan !== plan.id) e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
+                                  onMouseLeave={e => { if (selectedPlan !== plan.id) e.currentTarget.style.background = "transparent"; }}>
+                                  <div style={{ textAlign: "left" }}>
+                                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
+                                      <span style={{ fontSize: 14, fontWeight: 600, color: "#FFFFFF" }}>{plan.label}</span>
+                                      <span style={{ fontSize: 14, fontWeight: 700, color: "#f5d780" }}>৳{plan.price}/মাস</span>
+                                    </div>
+                                    <div style={{ fontSize: 11, color: plan.trial ? "#86efac" : "rgba(255,255,255,0.35)" }}>{plan.trial ? "✦ " : "⚠ "}{plan.desc}</div>
+                                  </div>
+                                  {selectedPlan === plan.id && <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#f5d780", flexShrink: 0 }} />}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        <p style={{ fontSize: 12, marginTop: 8, color: currentPlan.trial ? "#86efac" : "rgba(255,165,0,0.8)", fontWeight: 500 }}>
+                          {currentPlan.trial ? "✦ Basic প্যাকেজে ৭ দিনের ফ্রি ট্রায়াল — কোনো ক্রেডিট কার্ড লাগবে না" : "⚠ এই প্যাকেজে ট্রায়াল নেই — সাইন আপের পর পেমেন্ট করে সক্রিয় করুন"}
+                        </p>
                       </div>
                     </>
                   )}
@@ -355,16 +382,23 @@ const Login = () => {
                       )}
                     </div>
                     <div style={{ position: "relative" }}>
-                      <input type={showPassword ? "text" : "password"} placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} style={{ ...inputStyle, paddingRight: 48 }} required
+                      <input type={showPassword ? "text" : "password"} placeholder={mode === "signup" ? "যেমন: Admin@123" : "••••••••"} value={password} onChange={e => setPassword(e.target.value)} style={{ ...inputStyle, paddingRight: 48 }} required
                         onFocus={e => { e.target.style.borderColor = "rgba(201,168,76,0.6)"; e.target.style.backgroundColor = "rgba(255,255,255,0.06)"; }}
                         onBlur={e => { e.target.style.borderColor = "rgba(201,168,76,0.2)"; e.target.style.backgroundColor = "rgba(255,255,255,0.04)"; }} />
                       <button type="button" onClick={() => setShowPassword(!showPassword)}
                         style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.35)", display: "flex", alignItems: "center", padding: 0, transition: "color 0.2s" }}
                         onMouseEnter={e => e.currentTarget.style.color = "rgba(245,215,128,0.8)"}
-                        onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,0.35)"}>
+                        onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,0.35)"}> 
                         {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                       </button>
                     </div>
+                    {/* ✅ Password hint for signup */}
+                    {mode === "signup" && (
+                      <p style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", marginTop: 7, lineHeight: 1.6 }}>
+                        ⚠ ছোট হাতের (a-z) + বড় হাতের (A-Z) + সংখ্যা (0-9) + special character (!@#$) থাকতে হবে।{" "}
+                        <span style={{ color: "#f5d780", fontWeight: 600 }}>উদাহরণ: Admin@123</span>
+                      </p>
+                    )}
                   </div>
 
                   {/* Submit */}
@@ -372,11 +406,7 @@ const Login = () => {
                     style={{ width: "100%", height: 52, borderRadius: 12, background: submitting ? "rgba(201,168,76,0.4)" : gold, border: "none", cursor: submitting ? "not-allowed" : "pointer", fontSize: 15, fontWeight: 700, color: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.03em", boxShadow: submitting ? "none" : "0 8px 32px rgba(201,168,76,0.3)", transition: "all 0.25s", marginTop: 4 }}
                     onMouseEnter={e => { if (!submitting) { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 12px 40px rgba(201,168,76,0.45)"; } }}
                     onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 8px 32px rgba(201,168,76,0.3)"; }}>
-                    {submitting ? (
-                      <><span style={{ width: 16, height: 16, border: "2px solid rgba(10,10,10,0.3)", borderTopColor: "#0a0a0a", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} /> অপেক্ষা করুন...</>
-                    ) : (
-                      <>{mode === "signup" ? "সাইন আপ করুন" : "লগইন করুন"} <ArrowRight size={16} /></>
-                    )}
+                    {submitting ? <><span style={{ width: 16, height: 16, border: "2px solid rgba(10,10,10,0.3)", borderTopColor: "#0a0a0a", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} /> অপেক্ষা করুন...</> : <>{mode === "signup" ? "সাইন আপ করুন" : "লগইন করুন"} <ArrowRight size={16} /></>}
                   </button>
                 </div>
               </form>
